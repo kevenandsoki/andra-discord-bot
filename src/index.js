@@ -58,11 +58,6 @@ const commands = {
 			);
 		}
 
-		// turn order is determined by the array of battle.characters, which is just
-		// an array of all characters in the order they were written in the start command
-		// it loops through the array
-		// anybody can move for someone
-
 		send(message.channel, 'Battle start!\n' + battle.getBoardString());
 		battle.updateTurn();
 	},
