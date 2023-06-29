@@ -4,7 +4,7 @@ export default class Battle {
 	static MAX_CHARACTERS = 50;
 
 	teams = [];
-	turnIndex = -1;
+	turnIndex = 0;
 
 	constructor(channel, width, height) {
 		this.channel = channel;
@@ -14,8 +14,22 @@ export default class Battle {
 		battles.push(this);
 	}
 
+	static getBattleInChannel(channel) {
+		const battle = battles.find(battle => battle.channel === channel);
+
+		if (!battle) {
+			throw new Error('There are no ongoing battles in this channel.');
+		}
+
+		return battle;
+	}
+
 	get characters() {
 		return this.teams.flatMap(team => team.characters);
+	}
+
+	get turnCharacter() {
+		return this.characters[this.turnIndex];
 	}
 
 	getCharactersByPos({ x, y }) {
@@ -29,6 +43,10 @@ export default class Battle {
 		}
 
 		return characters;
+	}
+
+	getCharactersByLetter(letter) {
+		return this.characters.filter(characters => characters.letter === letter);
 	}
 
 	isOutOfBounds(x, y) {
@@ -56,12 +74,12 @@ export default class Battle {
 
 	updateTurn() {
 		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
-		this.turnCharacter = this.characters[this.turnIndex];
 
-		this.channel.send(`${this.turnCharacter.role ?? this.turnCharacter.letter}'s turn!`);
+		this.announceTurn();
 	}
 
-	static getBattleByChannel(channel) {
-		return battles.find(battle => battle.channel === channel);
+	announceTurn() {
+		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
+		this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
 	}
 }

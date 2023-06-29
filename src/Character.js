@@ -1,5 +1,5 @@
 export default class Character {
-	constructor(team, letter, roleID, hp, mp, atk, spd) {
+	constructor(team, letter, roleID, hp, mp, atk, rng, spd) {
 		this.team = team;
 		this.battle = this.team.battle;
 		this.channel = this.battle.channel;
@@ -9,7 +9,11 @@ export default class Character {
 		this.hp = +hp;
 		this.mp = +mp;
 		this.atk = +atk;
+		this.rng = +rng;
 		this.spd = +spd;
+
+		this.maxHP = this.hp;
+		this.maxMP = this.mp;
 
 		if (this.team.isNth(0)) {
 			this.x = 0;
@@ -22,6 +26,19 @@ export default class Character {
 		this.team.characters.push(this);
 	}
 
+	static fromString(team, string) {
+		const match = string.match(/^(\*)?([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+), (\d+)$/i);
+		const [, hasFirstTurn, letter, roleID, hp, mp, atk, rng, spd] = match;
+
+		const character = new Character(team, letter, roleID, hp, mp, atk, rng, spd);
+
+		if (hasFirstTurn) {
+			character.battle.turnIndex = character.battle.characters.indexOf(character);
+		}
+
+		return character;
+	}
+
 	goToLeastCrowdedRow() {
 		const yValues = [...new Array(this.battle.height)].map((_, i) => i);
 
@@ -32,9 +49,25 @@ export default class Character {
 		this.y = leastCrowdedRows[Math.floor(Math.random() * leastCrowdedRows.length)];
 	}
 
+	getOtherTeam() {
+		return this.battle.teams[this.team.isNth(0) ? 1 : 0];
+	}
+
+	distanceTo(character) {
+		const xDistance = Math.abs(this.x - character.x);
+		const yDistance = Math.abs(this.y - character.y);
+		return Math.max(xDistance, yDistance);
+	}
+
+	realDistanceTo(character) {
+		const xDistance = Math.abs(this.x - character.x);
+		const yDistance = Math.abs(this.y - character.y);
+		return Math.sqrt(xDistance ** 2 + yDistance ** 2);
+	}
+
 	move(distance, direction) {
 		if (distance > this.spd) {
-			throw new Error(`Character ${this.letter}'s SPD is ${this.spd}, so you cannot move that far.`);
+			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot move that far.`);
 		}
 
 		direction = direction?.toLowerCase();
@@ -64,17 +97,60 @@ export default class Character {
 		}
 
 		if (this.battle.isOutOfBounds(x, y)) {
-			throw new Error(`You tried to move character ${this.letter} out of bounds.`);
+			throw new Error(`You tried to move character ${this} out of bounds.`);
 		}
 
 		this.x = x;
 		this.y = y;
 	}
 
-	static fromString(team, string) {
-		const match = string.match(/^([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+)/i);
-		const [, letter, roleID, hp, mp, atk, spd] = match;
+	attack(targetLetter, count) {
+		if (count > this.spd) {
+			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot attack that many times.`);
+		}
 
-		return new Character(team, letter, roleID, hp, mp, atk, spd);
+		targetLetter = targetLetter?.toUpperCase();
+
+		let potentialTargets = this.getOtherTeam().characters;
+
+		if (targetLetter) {
+			potentialTargets = potentialTargets.filter(character => character.letter === targetLetter);
+
+			if (potentialTargets.length === 0) {
+				throw new Error(`There is no enemy with the letter '${targetLetter}'.`);
+			}
+		}
+
+		let target;
+		for (const character of potentialTargets) {
+			if (target === undefined || this.realDistanceTo(character) < this.realDistanceTo(target)) {
+				target = character;
+			}
+		}
+
+		if (this.distanceTo(target) > this.rng) {
+			throw new Error(`Character ${target} is outside of character ${this}'s range.`);
+		}
+
+		const damage = this.atk * count;
+		target.damage(damage);
+
+		return { damage, target };
+	}
+
+	damage(damage) {
+		this.hp = Math.max(0, this.hp - damage);
+
+		if (this.hp === 0) {
+			this.remove();
+		}
+	}
+
+	remove() {
+		this.team.characters.splice(this.team.characters.indexOf(this), 1);
+	}
+
+	toString() {
+		return `[${this.letter}]`;
 	}
 }
