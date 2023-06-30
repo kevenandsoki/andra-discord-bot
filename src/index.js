@@ -16,7 +16,7 @@ client.once(Events.ClientReady, () => {
 	console.log('Ready!');
 });
 
-const send = (channel, content) => {
+export const send = (channel, content) => {
 	channel.send({
 		embeds: [{
 			description: content,
@@ -64,6 +64,12 @@ const commands = {
 
 		send(message.channel, 'Battle start!\n' + battle.getBoardString());
 		battle.announceTurn();
+	},
+	'end battle': message => {
+		const battle = Battle.getBattleInChannel(message.channel);
+
+		battle.remove();
+		send(message.channel, 'The battle has concluded.');
 	},
 	'move': message => {
 		const match = message.content.match(/^>> ?move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/i);

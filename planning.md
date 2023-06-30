@@ -10,21 +10,18 @@ user has to tell andra for each characters in battle:
 
 # to-do plan
 
-- implement battles
-	- users can create battles with up to 25 characters
-	- the bot posts a battle screen
-	- users can 'Attack' and 'Move'
-	- characters lose HP until they die
-		- when all characters on one side have 0 HP, the game is over and the other side wins.
-	- import and export battles
+- multiple commands per line
+- help command
 
 # command list
 
-help,
+help
 start battle
+end battle
 attack # (#)
 move #
-special "name of move"
+save battle preset
+load battle preset
 
 # demo of conversation
 
@@ -34,9 +31,9 @@ user:
 andra:
 >> To start a battle, follow this format:
 ">> start battle
-(letter), @Role, HP, MP, ATK, SPD
+(letter), @Role, HP, MP, ATK, RNG, SPD
 vs.
-(letter), @Role, HP, MP, ATK, SPD
+(letter), @Role, HP, MP, ATK, RNG, SPD
 >> You can add more characters to either side, by making a new line.
 >> You can also have duplicate letters, such as multiple Enemies (E).
 

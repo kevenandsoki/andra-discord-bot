@@ -73,13 +73,22 @@ export default class Battle {
 	}
 
 	updateTurn() {
-		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
+		const losingTeam = this.teams.find(team => team.characters.length === 0);
+		if (losingTeam) {
+			losingTeam.getOtherTeam().win();
+			return;
+		}
 
+		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
 		this.announceTurn();
 	}
 
 	announceTurn() {
 		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
 		this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
+	}
+
+	remove() {
+		battles.splice(battles.indexOf(this), 1);
 	}
 }

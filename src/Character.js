@@ -49,10 +49,6 @@ export default class Character {
 		this.y = leastCrowdedRows[Math.floor(Math.random() * leastCrowdedRows.length)];
 	}
 
-	getOtherTeam() {
-		return this.battle.teams[this.team.isNth(0) ? 1 : 0];
-	}
-
 	distanceTo(character) {
 		const xDistance = Math.abs(this.x - character.x);
 		const yDistance = Math.abs(this.y - character.y);
@@ -111,7 +107,7 @@ export default class Character {
 
 		targetLetter = targetLetter?.toUpperCase();
 
-		let potentialTargets = this.getOtherTeam().characters;
+		let potentialTargets = this.team.getOtherTeam().characters;
 
 		if (targetLetter) {
 			potentialTargets = potentialTargets.filter(character => character.letter === targetLetter);

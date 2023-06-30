@@ -1,11 +1,11 @@
 import Character from './Character.js';
+import { send } from './index.js';
 
 export default class Team {
 	characters = [];
 
 	constructor(battle) {
 		this.battle = battle;
-		this.channel = this.battle.channel;
 
 		this.battle.teams.push(this);
 	}
@@ -21,5 +21,28 @@ export default class Team {
 
 	isNth(n) {
 		return this === this.battle.teams[n];
+	}
+
+	getOtherTeam() {
+		return this.battle.teams[this.isNth(0) ? 1 : 0];
+	}
+
+	win() {
+		const winnerTexts = this.characters.map(String);
+
+		if (this.characters.length > 1) {
+			const lastIndex = winnerTexts.length - 1;
+			winnerTexts[lastIndex] = 'and ' + winnerTexts[lastIndex];
+		}
+
+		let winnerText = winnerTexts.join(
+			winnerTexts.length === 2 ? ' ' : ', '
+		);
+
+		winnerText += ` win${winnerTexts.length === 1 ? 's' : ''}!`;
+		winnerText += ' The battle has concluded.';
+
+		send(this.battle.channel, winnerText);
+		this.battle.remove();
 	}
 }
