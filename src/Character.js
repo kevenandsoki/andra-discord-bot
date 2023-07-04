@@ -1,5 +1,5 @@
 export default class Character {
-	constructor(team, letter, roleID, hp, mp, atk, rng, spd) {
+	constructor(team, letter, roleID, hp, atk, rng, spd) {
 		this.team = team;
 		this.battle = this.team.battle;
 		this.channel = this.battle.channel;
@@ -7,13 +7,11 @@ export default class Character {
 		this.letter = letter.toUpperCase();
 		this.role = this.channel.guild.roles.resolve(roleID);
 		this.hp = +hp;
-		this.mp = +mp;
 		this.atk = +atk;
 		this.rng = +rng;
 		this.spd = +spd;
 
 		this.maxHP = this.hp;
-		this.maxMP = this.mp;
 
 		if (this.team.isNth(0)) {
 			this.x = 0;
@@ -27,10 +25,10 @@ export default class Character {
 	}
 
 	static fromString(team, string) {
-		const match = string.match(/^(\*)?([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+), (\d+)$/i);
-		const [, hasFirstTurn, letter, roleID, hp, mp, atk, rng, spd] = match;
+		const match = string.match(/^(\*)?([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+)$/i);
+		const [, hasFirstTurn, letter, roleID, hp, atk, rng, spd] = match;
 
-		const character = new Character(team, letter, roleID, hp, mp, atk, rng, spd);
+		const character = new Character(team, letter, roleID, hp, atk, rng, spd);
 
 		if (hasFirstTurn) {
 			character.battle.turnIndex = character.battle.characters.indexOf(character);
@@ -148,5 +146,28 @@ export default class Character {
 
 	toString() {
 		return `[${this.letter}]`;
+	}
+
+	toJSON() {
+		return {
+			letter: this.letter,
+			roleID: this.role.id,
+			hp: this.maxHP,
+			atk: this.atk,
+			rng: this.rng,
+			spd: this.spd,
+		};
+	}
+
+	fromJSON(team, characterJSON) {
+		return new Character(
+			team,
+			characterJSON.letter,
+			characterJSON.roleID,
+			characterJSON.hp,
+			characterJSON.atk,
+			characterJSON.rng,
+			characterJSON.spd,
+		);
 	}
 }

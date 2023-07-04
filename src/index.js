@@ -1,7 +1,9 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import fs from 'node:fs/promises';
+import { Client, Events, GatewayIntentBits, PermissionsBitField } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import Battle from './Battle.js';
 import Team from './Team.js';
+import Character from './Character.js';
 
 const client = new Client({
 	intents: [
@@ -16,8 +18,8 @@ client.once(Events.ClientReady, () => {
 	console.log('Ready!');
 });
 
-export const send = (channel, content) => {
-	channel.send({
+export const send = async (channel, content) => {
+	await channel.send({
 		embeds: [{
 			description: content,
 			color: 0xcad0d5,
@@ -25,22 +27,55 @@ export const send = (channel, content) => {
 	});
 };
 
+const requirePermissions = member => {
+	if (!member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+		throw new Error("You must have \"Manage Messages\" permissions in this server to do that.");
+	}
+};
+
+const mapReviver = (_, value) => {
+	if (Array.isArray(value) && value.every(Array.isArray)) {
+		return new Map(value);
+	}
+
+	return value;
+};
+
+const mapReplacer = (_, value) => {
+	if (value instanceof Map) {
+		return Array.from(value);
+	}
+
+	return value;
+};
+
+let presetsByGuildID = {};
+
+fs.readFile('data/presets.json', 'utf8').then(string => {
+	presetsByGuildID = JSON.parse(string, mapReviver);
+}).catch(() => {});
+
+const savePresets = async () => {
+	const presetData = JSON.stringify(presetsByGuildID, mapReplacer);
+
+	await fs.writeFile('data/presets.json', presetData);
+};
+
 export const battles = [];
 
 const commands = {
-	'start battle': message => {
-		// TODO: add turn order start
-		const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+, \d+ *)+)$/i);
+	'start battle': async message => {
+		const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);
 
 		if (!match) {
-			send(
+			await send(
 				message.channel,
 				'To start a battle, follow this format:\n' +
 				'```\n' +
 				'>> start battle [W]x[H]\n' +
-				'[letter], [@Role], [HP], [MP], [ATK], [RNG], [SPD]\n' +
+				'[letter], [@Role], [HP], [ATK], [RNG], [SPD]\n' +
 				'vs.\n' +
-				'[letter], [@Role], [HP], [MP], [ATK], [RNG], [SPD]\n' +
+				'[letter], [@Role], [HP], [ATK], [RNG], [SPD]\n' +
 				'```\n' +
 				'You can add more characters to either side, by making a new line.\n' +
 				'You may also have duplicate letters, such as multiple Enemies (E).'
@@ -62,20 +97,20 @@ const commands = {
 			);
 		}
 
-		send(message.channel, 'Battle start!\n' + battle.getBoardString());
-		battle.announceTurn();
+		await send(message.channel, 'Battle start!\n' + battle.getBoardString());
+		await battle.announceTurn();
 	},
-	'end battle': message => {
+	'end battle': async message => {
 		const battle = Battle.getBattleInChannel(message.channel);
 
 		battle.remove();
-		send(message.channel, 'The battle has concluded.');
+		await send(message.channel, 'The battle has concluded.');
 	},
-	'move': message => {
+	'move': async message => {
 		const match = message.content.match(/^>> ?move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/i);
 
 		if (!match) {
-			send(
+			await send(
 				message.channel,
 				'To use the "Move" command, follow this format:\n' +
 				'```\n' +
@@ -91,14 +126,14 @@ const commands = {
 
 		battle.turnCharacter.move(+match[1], match[2]);
 
-		send(message.channel, battle.getBoardString());
-		battle.updateTurn();
+		await send(message.channel, battle.getBoardString());
+		await battle.updateTurn();
 	},
-	'attack': message => {
+	'attack': async message => {
 		const match = message.content.match(/^>> ?attack(?: ([a-z]))? (\d+)$/i);
 
 		if (!match) {
-			send(
+			await send(
 				message.channel,
 				'To use the "Attack" command, follow this format:\n' +
 				'```\n' +
@@ -123,12 +158,85 @@ const commands = {
 
 		response += battle.getBoardString();
 
-		send(message.channel, response);
-		battle.updateTurn();
+		await send(message.channel, response);
+		await battle.updateTurn();
+	},
+	'save battle preset': async message => {
+		requirePermissions(message.member);
+
+		const match = message.content.match(/^>> ?save battle preset "([\w-]+)"$/i);
+
+		if (!match) {
+			await send(
+				message.channel,
+				'To save the current battle as a preset, follow this format:\n' +
+				'```\n' +
+				'>> save battle preset "name_here"\n' +
+				'```\n' +
+				'You can then load, delete, or list all battle presets.\n' +
+				'Note: Preset names can only have letters, numbers, underscores, or hyphens.'
+			);
+			return;
+		}
+
+		const battle = Battle.getBattleInChannel(message.channel);
+		const presetName = match[1];
+
+		presetsByGuildID[message.guild.id] ??= new Map();
+		presetsByGuildID[message.guild.id].set(presetName, battle.toJSON());
+
+		await savePresets();
+
+		await send(message.channel, `Battle preset "${presetName}" saved!`);
+	},
+	'load battle preset': async message => {
+		const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);
+
+		if (!match) {
+			await send(
+				message.channel,
+				'To load a battle preset, follow this format:\n' +
+				'```\n' +
+				'>> load battle preset "name_here"\n' +
+				'```'
+			);
+			return;
+		}
+
+		const presetName = match[1];
+		const preset = presetsByGuildID[message.guild.id].get(presetName);
+
+		if (!preset) {
+			throw new Error(`There is no preset saved with the name "${presetName}" in this server.`);
+		}
+
+		const battle = Battle.fromJSON(message.channel, preset);
+
+		await send(message.channel, 'Battle start!\n' + battle.getBoardString());
+		await battle.announceTurn();
+	},
+	'delete battle preset': async message => {
+		const match = message.content.match(/^>> ?delete battle preset "([\w-]+)"$/i);
+
+		if (!match) {
+			await send(
+				message.channel,
+				'To delete a battle preset, follow this format:\n' +
+				'```\n' +
+				'>> delete battle preset "name_here"\n' +
+				'```'
+			);
+			return;
+		}
+
+		await send(message.channel, `Preset ${presetName} deleted.`);
+	},
+	'list battle presets': async message => {
+		await send(message.channel, 'The battle has concluded.');
 	},
 };
 
-client.on(Events.MessageCreate, message => {
+client.on(Events.MessageCreate, async message => {
 	if (message.author.id === client.application.id) {
 		return;
 	}
@@ -138,7 +246,6 @@ client.on(Events.MessageCreate, message => {
 	}
 
 	let runCommand;
-
 	for (const [commandName, commandFunction] of Object.entries(commands)) {
 		if (new RegExp(`>> ?${commandName}`).test(message.content)) {
 			runCommand = commandFunction;
@@ -147,14 +254,14 @@ client.on(Events.MessageCreate, message => {
 	}
 
 	if (!runCommand) {
-		send(message.channel, 'I do not recognize that command. For help with commands, type ">> help".');
+		await send(message.channel, 'I do not recognize that command. For help with commands, type ">> help".');
 		return;
 	}
 
 	try {
-		runCommand(message);
+		await runCommand(message);
 	} catch (error) {
-		send(message.channel, error.toString());
+		await send(message.channel, error.toString());
 
 		if (error.constructor !== Error) {
 			console.error(error);

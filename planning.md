@@ -4,8 +4,8 @@ user has to tell andra for each characters in battle:
 - a letter (so up to 26)
 - a role (n/a is an option, in case you don't want to be @'d)
 - max hp
-- current mp
 - attack stat
+- range
 - speed stat
 
 # to-do plan
@@ -22,6 +22,8 @@ attack # (#)
 move #
 save battle preset
 load battle preset
+delete battle preset
+list battle preset
 
 # demo of conversation
 

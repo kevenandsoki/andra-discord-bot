@@ -72,23 +72,43 @@ export default class Battle {
 		return '```\n' + rowStrings.join('\n') + '\n```';
 	}
 
-	updateTurn() {
+	async updateTurn() {
 		const losingTeam = this.teams.find(team => team.characters.length === 0);
 		if (losingTeam) {
-			losingTeam.getOtherTeam().win();
+			await losingTeam.getOtherTeam().win();
 			return;
 		}
 
 		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
-		this.announceTurn();
+		await this.announceTurn();
 	}
 
-	announceTurn() {
+	async announceTurn() {
 		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
-		this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
+		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
 	}
 
 	remove() {
 		battles.splice(battles.indexOf(this), 1);
+	}
+
+	toJSON() {
+		return {
+			width: this.width,
+			height: this.height,
+			turnIndex: this.turnIndex,
+			teams: this.teams.map(team => team.toJSON()),
+		};
+	}
+
+	fromJSON(channel, battleJSON) {
+		const battle = new Battle(channel, battleJSON.width, battleJSON.height);
+		battle.turnIndex = battleJSON.turnIndex;
+
+		for (const teamJSON of battleJSON.teams) {
+			Team.fromJSON(battle, teamJSON);
+		}
+
+		return battle;
 	}
 }
