@@ -19,6 +19,22 @@ export default class Team {
 		return team;
 	}
 
+	static fromJSON(battle, teamJSON) {
+		const team = new Team(battle);
+
+		for (const characterJSON of teamJSON.characters) {
+			Character.fromJSON(team, characterJSON);
+		}
+
+		return team;
+	}
+
+	toJSON() {
+		return {
+			characters: this.characters.map(character => character.toJSON()),
+		};
+	}
+
 	isNth(n) {
 		return this === this.battle.teams[n];
 	}
@@ -44,21 +60,5 @@ export default class Team {
 
 		await send(this.battle.channel, winnerText);
 		this.battle.remove();
-	}
-
-	toJSON() {
-		return {
-			characters: this.characters.map(character => character.toJSON()),
-		};
-	}
-
-	fromJSON(battle, teamJSON) {
-		const team = new Team(battle);
-
-		for (const characterJSON of teamJSON.characters) {
-			Character.fromJSON(team, characterJSON);
-		}
-
-		return team;
 	}
 }

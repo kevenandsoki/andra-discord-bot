@@ -1,4 +1,5 @@
-import { battles } from "./index.js";
+import Team from "./Team.js";
+import { battles, send } from "./index.js";
 
 export default class Battle {
 	static MAX_CHARACTERS = 50;
@@ -22,6 +23,26 @@ export default class Battle {
 		}
 
 		return battle;
+	}
+
+	static fromJSON(channel, battleJSON) {
+		const battle = new Battle(channel, battleJSON.width, battleJSON.height);
+		battle.turnIndex = battleJSON.turnIndex;
+
+		for (const teamJSON of battleJSON.teams) {
+			Team.fromJSON(battle, teamJSON);
+		}
+
+		return battle;
+	}
+
+	toJSON() {
+		return {
+			width: this.width,
+			height: this.height,
+			turnIndex: this.turnIndex,
+			teams: this.teams.map(team => team.toJSON()),
+		};
 	}
 
 	get characters() {
@@ -83,6 +104,11 @@ export default class Battle {
 		await this.announceTurn();
 	}
 
+	async announceStart() {
+		await send(this.channel, 'Battle start!\n' + this.getBoardString());
+		await this.announceTurn();
+	}
+
 	async announceTurn() {
 		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
 		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
@@ -90,25 +116,5 @@ export default class Battle {
 
 	remove() {
 		battles.splice(battles.indexOf(this), 1);
-	}
-
-	toJSON() {
-		return {
-			width: this.width,
-			height: this.height,
-			turnIndex: this.turnIndex,
-			teams: this.teams.map(team => team.toJSON()),
-		};
-	}
-
-	fromJSON(channel, battleJSON) {
-		const battle = new Battle(channel, battleJSON.width, battleJSON.height);
-		battle.turnIndex = battleJSON.turnIndex;
-
-		for (const teamJSON of battleJSON.teams) {
-			Team.fromJSON(battle, teamJSON);
-		}
-
-		return battle;
 	}
 }

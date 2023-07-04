@@ -37,6 +37,29 @@ export default class Character {
 		return character;
 	}
 
+	static fromJSON(team, characterJSON) {
+		return new Character(
+			team,
+			characterJSON.letter,
+			characterJSON.roleID,
+			characterJSON.hp,
+			characterJSON.atk,
+			characterJSON.rng,
+			characterJSON.spd,
+		);
+	}
+
+	toJSON() {
+		return {
+			letter: this.letter,
+			roleID: this.role.id,
+			hp: this.maxHP,
+			atk: this.atk,
+			rng: this.rng,
+			spd: this.spd,
+		};
+	}
+
 	goToLeastCrowdedRow() {
 		const yValues = [...new Array(this.battle.height)].map((_, i) => i);
 
@@ -146,28 +169,5 @@ export default class Character {
 
 	toString() {
 		return `[${this.letter}]`;
-	}
-
-	toJSON() {
-		return {
-			letter: this.letter,
-			roleID: this.role.id,
-			hp: this.maxHP,
-			atk: this.atk,
-			rng: this.rng,
-			spd: this.spd,
-		};
-	}
-
-	fromJSON(team, characterJSON) {
-		return new Character(
-			team,
-			characterJSON.letter,
-			characterJSON.roleID,
-			characterJSON.hp,
-			characterJSON.atk,
-			characterJSON.rng,
-			characterJSON.spd,
-		);
 	}
 }

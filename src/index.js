@@ -3,7 +3,6 @@ import { Client, Events, GatewayIntentBits, PermissionsBitField } from 'discord.
 import config from '../config.json' assert { type: 'json' };
 import Battle from './Battle.js';
 import Team from './Team.js';
-import Character from './Character.js';
 
 const client = new Client({
 	intents: [
@@ -18,11 +17,14 @@ client.once(Events.ClientReady, () => {
 	console.log('Ready!');
 });
 
-export const send = async (channel, content) => {
+const DEFAULT_COLOR = 0xcad0d5;
+const ERROR_COLOR = 0xffcc4d;
+
+export const send = async (channel, content, color) => {
 	await channel.send({
 		embeds: [{
 			description: content,
-			color: 0xcad0d5,
+			color: color ?? DEFAULT_COLOR,
 		}],
 	});
 };
@@ -97,8 +99,7 @@ const commands = {
 			);
 		}
 
-		await send(message.channel, 'Battle start!\n' + battle.getBoardString());
-		await battle.announceTurn();
+		await battle.announceStart();
 	},
 	'end battle': async message => {
 		const battle = Battle.getBattleInChannel(message.channel);
@@ -126,7 +127,11 @@ const commands = {
 
 		battle.turnCharacter.move(+match[1], match[2]);
 
-		await send(message.channel, battle.getBoardString());
+		await send(
+			message.channel,
+			battle.getBoardString(),
+			battle.turnCharacter.role?.color,
+		);
 		await battle.updateTurn();
 	},
 	'attack': async message => {
@@ -158,7 +163,11 @@ const commands = {
 
 		response += battle.getBoardString();
 
-		await send(message.channel, response);
+		await send(
+			message.channel,
+			response,
+			battle.turnCharacter.role?.color,
+		);
 		await battle.updateTurn();
 	},
 	'save battle preset': async message => {
@@ -204,7 +213,7 @@ const commands = {
 		}
 
 		const presetName = match[1];
-		const preset = presetsByGuildID[message.guild.id].get(presetName);
+		const preset = presetsByGuildID[message.guild.id]?.get(presetName);
 
 		if (!preset) {
 			throw new Error(`There is no preset saved with the name "${presetName}" in this server.`);
@@ -212,10 +221,11 @@ const commands = {
 
 		const battle = Battle.fromJSON(message.channel, preset);
 
-		await send(message.channel, 'Battle start!\n' + battle.getBoardString());
-		await battle.announceTurn();
+		await battle.announceStart();
 	},
 	'delete battle preset': async message => {
+		requirePermissions(message.member);
+
 		const match = message.content.match(/^>> ?delete battle preset "([\w-]+)"$/i);
 
 		if (!match) {
@@ -229,10 +239,24 @@ const commands = {
 			return;
 		}
 
+		const presetName = match[1];
+		const presetDeleted = presetsByGuildID[message.guild.id]?.delete(presetName);
+
+		if (!presetDeleted) {
+			throw new Error(`There is no preset saved with the name "${presetName}" in this server.`);
+		}
+
+		if (presetsByGuildID[message.guild.id].size === 0) {
+			delete presetsByGuildID[message.guild.id];
+		}
+
+		await savePresets();
+
 		await send(message.channel, `Preset ${presetName} deleted.`);
 	},
 	'list battle presets': async message => {
-		await send(message.channel, 'The battle has concluded.');
+		requirePermissions(message.member);
+		await send(message.channel, 'Penguin yay 1');
 	},
 };
 
@@ -261,7 +285,7 @@ client.on(Events.MessageCreate, async message => {
 	try {
 		await runCommand(message);
 	} catch (error) {
-		await send(message.channel, error.toString());
+		await send(message.channel, error.toString(), ERROR_COLOR);
 
 		if (error.constructor !== Error) {
 			console.error(error);
