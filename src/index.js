@@ -107,7 +107,7 @@ const commands = {
 			throw new Error('There is already an ongoing battle in this channel.');
 		}
 
-		const battle = new Battle(message.channel, +match[1], +match[2]);
+		const battle = new Battle(message.channel, +match[1], +match[2], message.content);
 		Team.fromString(battle, match[3]);
 		Team.fromString(battle, match[4]);
 
@@ -361,7 +361,8 @@ const commands = {
 
 		presetText += '```\n';
 
-		presetText += 'Here was the command that created this battle:';
+		presetText += 'Here was the command that created this battle:\n';
+		presetText += battleJSON.commandText;
 
 		await send(message.channel, presetText);
 	},
@@ -378,7 +379,7 @@ client.on(Events.MessageCreate, async message => {
 
 	let runCommand;
 	for (const [commandName, commandFunction] of Object.entries(commands)) {
-		if (new RegExp(`>> ?${commandName}`).test(message.content)) {
+		if (new RegExp(`^>> ?${commandName}`).test(message.content)) {
 			runCommand = commandFunction;
 			break;
 		}

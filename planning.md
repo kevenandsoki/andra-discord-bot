@@ -11,7 +11,7 @@ user has to tell andra for each characters in battle:
 # to-do plan
 
 - multiple commands per line
--
+- fix the stupid dumb stupid dumb idiot stupid dumb battle command text
 
 # command list
 

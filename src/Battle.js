@@ -7,10 +7,11 @@ export default class Battle {
 	teams = [];
 	turnIndex = 0;
 
-	constructor(channel, width, height) {
+	constructor(channel, width, height, commandText) {
 		this.channel = channel;
 		this.width = width || 6;
 		this.height = height || 1;
+		this.commandText = commandText;
 
 		battles.push(this);
 	}
@@ -26,7 +27,12 @@ export default class Battle {
 	}
 
 	static fromJSON(channel, battleJSON) {
-		const battle = new Battle(channel, battleJSON.width, battleJSON.height);
+		const battle = new Battle(
+			channel,
+			battleJSON.width,
+			battleJSON.height,
+			battleJSON.commandText,
+		);
 		battle.turnIndex = battleJSON.turnIndex;
 
 		for (const teamJSON of battleJSON.teams) {
@@ -41,6 +47,7 @@ export default class Battle {
 			width: this.width,
 			height: this.height,
 			turnIndex: this.turnIndex,
+			commandText: this.commandText,
 			teams: this.teams.map(team => team.toJSON()),
 		};
 	}
