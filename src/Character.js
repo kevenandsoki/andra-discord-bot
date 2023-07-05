@@ -1,15 +1,23 @@
 export default class Character {
+	static MAX_STAT_VALUE = 100_000_000;
+
 	constructor(team, letter, roleID, hp, atk, rng, spd) {
 		this.team = team;
 		this.battle = this.team.battle;
 		this.channel = this.battle.channel;
 
 		this.letter = letter.toUpperCase();
-		this.role = this.channel.guild.roles.resolve(roleID);
+		this.role = this.channel.guild.roles.resolve(roleID) ?? undefined;
+
 		this.hp = +hp;
 		this.atk = +atk;
 		this.rng = +rng;
 		this.spd = +spd;
+
+		const maxStatValue = Math.max(this.hp, this.atk, this.rng, this.spd);
+		if (maxStatValue > Character.MAX_STAT_VALUE) {
+			throw new Error(`You cannot make a character stat greater than ${Character.MAX_STAT_VALUE.toLocaleString()}!`);
+		}
 
 		this.maxHP = this.hp;
 
@@ -52,7 +60,7 @@ export default class Character {
 	toJSON() {
 		return {
 			letter: this.letter,
-			roleID: this.role.id,
+			roleID: this.role?.id,
 			hp: this.maxHP,
 			atk: this.atk,
 			rng: this.rng,

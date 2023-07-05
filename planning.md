@@ -11,7 +11,7 @@ user has to tell andra for each characters in battle:
 # to-do plan
 
 - multiple commands per line
-- help command
+-
 
 # command list
 

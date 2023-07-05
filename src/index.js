@@ -18,7 +18,10 @@ client.once(Events.ClientReady, () => {
 });
 
 const DEFAULT_COLOR = 0xcad0d5;
+const SUCCESS_COLOR = 0x77b255;
 const ERROR_COLOR = 0xffcc4d;
+
+const MAX_PRESET_COUNT = 100;
 
 export const send = async (channel, content, color) => {
 	await channel.send({
@@ -66,6 +69,21 @@ const savePresets = async () => {
 export const battles = [];
 
 const commands = {
+	'help': async message => {
+		let helpText = 'Here is a list of the commands available:\n';
+
+		helpText += '```\n';
+
+		const commandNames = Object.keys(commands);
+		helpText += commandNames.map(command => `>> ${command}`).join('\n');
+
+		helpText += '```\n';
+
+		helpText += 'For `attack` and `move`, you can combine them during a turn in a battle.\n';
+		helpText += 'A valid turn could be as follows: `>> attack R 1, move 2 back`';
+
+		await send(message.channel, helpText);
+	},
 	'start battle': async message => {
 		const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);
 
@@ -93,9 +111,9 @@ const commands = {
 		Team.fromString(battle, match[3]);
 		Team.fromString(battle, match[4]);
 
-		if (battle.characters.length > Battle.MAX_CHARACTERS) {
+		if (battle.characters.length > Battle.MAX_CHARACTER_COUNT) {
 			throw new Error(
-				`You cannot make a battle with more than ${Battle.MAX_CHARACTERS} characters! (That would be a bit ridiculous...)`
+				`You cannot make a battle with more than ${Battle.MAX_CHARACTER_COUNT} characters! (That would be a bit ridiculous...)`
 			);
 		}
 
@@ -173,6 +191,10 @@ const commands = {
 	'save battle preset': async message => {
 		requirePermissions(message.member);
 
+		if (presetsByGuildID[message.guild.id]?.size >= MAX_PRESET_COUNT) {
+			throw new Error(`This server has reached the maximum preset limit (${MAX_PRESET_COUNT}).`);
+		}
+
 		const match = message.content.match(/^>> ?save battle preset "([\w-]+)"$/i);
 
 		if (!match) {
@@ -196,7 +218,7 @@ const commands = {
 
 		await savePresets();
 
-		await send(message.channel, `Battle preset "${presetName}" saved!`);
+		await send(message.channel, `Battle preset "${presetName}" saved!`, SUCCESS_COLOR);
 	},
 	'load battle preset': async message => {
 		const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);
@@ -256,7 +278,92 @@ const commands = {
 	},
 	'list battle presets': async message => {
 		requirePermissions(message.member);
-		await send(message.channel, 'Penguin yay 1');
+
+		const presets = presetsByGuildID[message.guild.id];
+
+		if (!presets) {
+			await send(message.channel, 'There are no saved presets in this server.');
+			return;
+		}
+
+		let listText = 'List of this server\'s battle presets:\n';
+		listText += '```\n';
+
+		for (const [presetName, preset] of presets) {
+			listText += `${presetName} (${preset.width}x${preset.height})\n`;
+			listText += '  ';
+
+			listText += preset.teams.map(teamJSON => (
+				teamJSON.characters
+					.map(character => `[${character.letter}]`)
+					.join('')
+			)).join(' vs. ');
+
+			listText += '\n';
+		}
+
+		listText += '```';
+
+		await send(message.channel, listText);
+	},
+	'view battle preset': async message => {
+		requirePermissions(message.member);
+
+		const match = message.content.match(/^>> ?view battle preset "([\w-]+)"$/i);
+
+		if (!match) {
+			await send(
+				message.channel,
+				'To view a battle preset, follow this format:\n' +
+				'```\n' +
+				'>> view battle preset "name_here"\n' +
+				'```'
+			);
+			return;
+		}
+
+		const presetName = match[1];
+		const battleJSON = presetsByGuildID[message.guild.id]?.get(presetName);
+
+		if (!battleJSON) {
+			throw new Error(`There is no preset saved with the name "${presetName}" in this server.`);
+		}
+
+		let presetText = '```\n';
+		presetText += `NAME: ${presetName}\n`;
+		presetText += `SIZE: ${battleJSON.width}x${battleJSON.height}\n\n`;
+
+		let characterIndex = -1;
+
+		for (let teamIndex = 0; teamIndex < battleJSON.teams.length; teamIndex++) {
+			const teamJSON = battleJSON.teams[teamIndex];
+
+			presetText += `TEAM ${teamIndex + 1}:\n`;
+
+			for (const characterJSON of teamJSON.characters) {
+				characterIndex++;
+
+				presetText += '  ';
+				if (battleJSON.turnIndex === characterIndex) {
+					presetText += '*';
+				}
+				presetText += `[${characterJSON.letter}] - `;
+				presetText += `HP: ${characterJSON.hp}, `;
+				presetText += `ATK: ${characterJSON.atk}, `;
+				presetText += `RNG: ${characterJSON.rng}, `;
+				presetText += `SPD: ${characterJSON.spd}`;
+
+				presetText += '\n';
+			}
+
+			presetText += '\n';
+		}
+
+		presetText += '```\n';
+
+		presetText += 'Here was the command that created this battle:';
+
+		await send(message.channel, presetText);
 	},
 };
 

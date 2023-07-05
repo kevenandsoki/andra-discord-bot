@@ -2,7 +2,7 @@ import Team from "./Team.js";
 import { battles, send } from "./index.js";
 
 export default class Battle {
-	static MAX_CHARACTERS = 50;
+	static MAX_CHARACTER_COUNT = 50;
 
 	teams = [];
 	turnIndex = 0;
