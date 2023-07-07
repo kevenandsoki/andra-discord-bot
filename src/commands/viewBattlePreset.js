@@ -2,6 +2,7 @@
 
 import send from '../send.js';
 import { presetsByGuildID } from '../presets.js';
+import { requirePermissions } from '../commands.js';
 
 const viewBattlePreset = async message => {
 	requirePermissions(message.member);

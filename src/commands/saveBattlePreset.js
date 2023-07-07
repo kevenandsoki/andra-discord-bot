@@ -2,7 +2,7 @@
 
 import Battle from '../Battle.js';
 import send, { SUCCESS_COLOR } from '../send.js';
-import { MAX_PRESET_COUNT, presetsByGuildID } from '../presets.js';
+import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from '../presets.js';
 import { requirePermissions } from '../commands.js';
 
 const saveBattlePreset = async message => {
