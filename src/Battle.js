@@ -124,11 +124,11 @@ export default class Battle {
 		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
 	}
 
-	async atomically(callback) {
+	atomically(callback) {
 		const battleClone = deepCloneWithPrototypes(this);
 
 		try {
-			await callback();
+			callback();
 		} catch (error) {
 			battles.splice(battles.indexOf(this), 1, battleClone);
 

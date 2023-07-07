@@ -50,7 +50,7 @@ const moveOrAttack = async message => {
 
 	const damageByTarget = new Map();
 
-	await battle.atomically(() => {
+	battle.atomically(() => {
 		for (const rawSubcommand of subcommands) {
 			const subcommand = rawSubcommand.trim();
 

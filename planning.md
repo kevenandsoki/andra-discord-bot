@@ -61,4 +61,4 @@ P - - - - E
 - one subcommand's success persisted even though the second one failed
 - why doesnt deep clone cause infinite recursion
 
-idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp)
+idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp), and array mutations such as character removal must also be reverted
