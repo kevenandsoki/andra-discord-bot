@@ -1,17 +1,18 @@
 'use strict';
 
 import { PermissionsBitField } from 'discord.js';
-import send, { ERROR_COLOR } from './send.js';
-import help from './commands/help.js';
-import startBattle from './commands/startBattle.js';
-import endBattle from './commands/endBattle.js';
-import moveOrAttack from './commands/moveOrAttack.js';
-import saveBattlePreset from './commands/saveBattlePreset.js';
-import loadBattlePreset from './commands/loadBattlePreset.js';
-import deleteBattlePreset from './commands/deleteBattlePreset.js';
-import listBattlePresets from './commands/listBattlePresets.js';
-import viewBattlePreset from './commands/viewBattlePreset.js';
-import loveAndra from './commands/loveAndra.js';
+import send, { ERROR_COLOR } from '../send.js';
+import help from './help.js';
+import startBattle from './startBattle.js';
+import endBattle from './endBattle.js';
+import moveOrAttack from './moveOrAttack.js';
+import saveBattlePreset from './saveBattlePreset.js';
+import loadBattlePreset from './loadBattlePreset.js';
+import deleteBattlePreset from './deleteBattlePreset.js';
+import listBattlePresets from './listBattlePresets.js';
+import viewBattlePreset from './viewBattlePreset.js';
+import loveAndra from './loveAndra.js';
+import dance from './dance.js';
 
 export const UNKNOWN_COMMAND_TEXT = 'I do not recognize that command. For help with commands, type ">> help".';
 
@@ -23,6 +24,7 @@ export const requirePermissions = member => {
 
 const commands = {
 	'i love you andra :D': loveAndra,
+	'dance': dance,
 	'help': help,
 	'start battle': startBattle,
 	'end battle': endBattle,

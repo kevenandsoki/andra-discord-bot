@@ -1,6 +1,6 @@
 'use strict';
 
-import commands from '../commands.js';
+import commands from './index.js';
 import send from '../send.js';
 
 const help = async message => {

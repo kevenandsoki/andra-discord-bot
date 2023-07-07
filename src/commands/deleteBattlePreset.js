@@ -2,7 +2,7 @@
 
 import send from '../send.js';
 import { presetsByGuildID, savePresets } from '../presets.js';
-import { requirePermissions } from '../commands.js';
+import { requirePermissions } from './index.js';
 
 const deleteBattlePreset = async message => {
 	requirePermissions(message.member);

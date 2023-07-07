@@ -1,7 +1,7 @@
 'use strict';
 
 import Battle from '../Battle.js';
-import { UNKNOWN_COMMAND_TEXT } from '../commands.js';
+import { UNKNOWN_COMMAND_TEXT } from './index.js';
 import send from '../send.js';
 
 const runMoveSubcommand = (subcommand, battle) => {
