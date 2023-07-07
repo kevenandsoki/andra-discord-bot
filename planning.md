@@ -10,11 +10,11 @@ user has to tell andra for each characters in battle:
 
 # to-do plan
 
-- multiple commands per line
-- fix the stupid dumb stupid dumb idiot stupid dumb battle command text
+- finish multiple commands per line (move and attack)
 
 # command list
 
+i love you andra :D
 help
 start battle
 end battle
@@ -53,3 +53,12 @@ andra:
 B - - - - E
 P - - - - E
 ```
+
+# pain and suffering
+
+- SPD usage should be cumulative between subcommands
+- it sent the board and updated the turn even though the atomic operation failed
+- one subcommand's success persisted even though the second one failed
+- why doesnt deep clone cause infinite recursion
+
+idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp)

@@ -1,3 +1,5 @@
+'use strict';
+
 export default class Character {
 	static MAX_STAT_VALUE = 100_000_000;
 
@@ -89,7 +91,6 @@ export default class Character {
 		const yDistance = Math.abs(this.y - character.y);
 		return Math.sqrt(xDistance ** 2 + yDistance ** 2);
 	}
-
 	move(distance, direction) {
 		if (distance > this.spd) {
 			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot move that far.`);

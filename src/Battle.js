@@ -1,5 +1,8 @@
-import Team from "./Team.js";
-import { battles, send } from "./index.js";
+'use strict';
+
+import Team from './Team.js';
+import { battles, deepCloneWithPrototypes } from './index.js';
+import send from './send.js';
 
 export default class Battle {
 	static MAX_CHARACTER_COUNT = 50;
@@ -119,6 +122,18 @@ export default class Battle {
 	async announceTurn() {
 		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
 		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
+	}
+
+	async atomically(callback) {
+		const battleClone = deepCloneWithPrototypes(this);
+
+		try {
+			await callback();
+		} catch (error) {
+			battles.splice(battles.indexOf(this), 1, battleClone);
+
+			throw error;
+		}
 	}
 
 	remove() {
