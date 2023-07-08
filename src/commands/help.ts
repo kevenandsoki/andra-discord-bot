@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 import commands from '.';
 import send from 'send';
 
-const help = async (message: Message) => {
+export default async function help(message: Message) {
 	let helpText = 'Here is a list of the commands available:\n';
 
 	helpText += '```\n';
@@ -21,6 +21,4 @@ const help = async (message: Message) => {
 	helpText += 'A valid turn could be as follows: `>> attack R 1, move 2 back`';
 
 	await send(message.channel, helpText);
-};
-
-export default help;
+}

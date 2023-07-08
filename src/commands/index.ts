@@ -11,10 +11,20 @@ import listBattlePresets from './listBattlePresets';
 import viewBattlePreset from './viewBattlePreset';
 import loveAndra from './loveAndra';
 import dance from './dance';
+import greet from './greet';
 
 export const UNKNOWN_COMMAND_TEXT = 'I do not recognize that command. For help with commands, type ">> help".';
 
-export const requirePermissions = (member: GuildMember | null) => {
+export function requireGuildTo(
+	actionText: string,
+	message: Message,
+): asserts message is Message<true> {
+	if (!message.guild) {
+		throw new Error(`Sorry, you cannot ${actionText} outside of servers.`);
+	}
+}
+
+export function requirePermissions(member: GuildMember | null) {
 	if (member === null) {
 		// The member left the server between when the message was created and now.
 		throw new Error("Goodbye!");
@@ -23,7 +33,7 @@ export const requirePermissions = (member: GuildMember | null) => {
 	if (!member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
 		throw new Error("You must have \"Manage Messages\" permissions in this server to do that.");
 	}
-};
+}
 
 const commands = {
 	'hi': greet,
@@ -42,7 +52,7 @@ const commands = {
 
 export default commands;
 
-export const handleCommand = async (message: Message) => {
+export async function handleCommand(message: Message) {
 	let runCommand;
 	for (const [commandName, commandFunction] of Object.entries(commands)) {
 		if (new RegExp(`^>> ?(?:${commandName})`).test(message.content)) {
@@ -64,4 +74,4 @@ export const handleCommand = async (message: Message) => {
 			console.error(error);
 		}
 	}
-};
+}

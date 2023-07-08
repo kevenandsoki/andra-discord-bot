@@ -1,9 +1,12 @@
 import Battle from 'Battle';
+import { requireGuildTo } from 'commands';
 import { Message } from 'discord.js';
 import { presetsByGuildID } from 'presets';
 import send from 'send';
 
-const loadBattlePreset = async (message: Message) => {
+export default async function loadBattlePreset(message: Message) {
+	requireGuildTo('use battle presets', message);
+
 	const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);
 
 	if (!match) {
@@ -26,6 +29,4 @@ const loadBattlePreset = async (message: Message) => {
 	const battle = Battle.fromJSON(message.channel, preset);
 
 	await battle.announceStart();
-};
-
-export default loadBattlePreset;
+}

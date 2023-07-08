@@ -1,9 +1,10 @@
 import send from 'send';
 import { presetsByGuildID } from 'presets';
-import { requirePermissions } from '.';
+import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
 
-const viewBattlePreset = async (message: Message) => {
+export default async function viewBattlePreset(message: Message) {
+	requireGuildTo('use battle presets', message);
 	requirePermissions(message.member);
 
 	const match = message.content.match(/^>> ?view battle preset "([\w-]+)"$/i);
@@ -61,6 +62,4 @@ const viewBattlePreset = async (message: Message) => {
 	presetText += battleJSON.commandText;
 
 	await send(message.channel, presetText);
-};
-
-export default viewBattlePreset;
+}

@@ -1,10 +1,11 @@
 import Battle from 'Battle';
 import send, { SUCCESS_COLOR } from 'send';
 import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from 'presets';
-import { requirePermissions } from '.';
+import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
 
-const saveBattlePreset = async (message: Message) => {
+export default async function saveBattlePreset(message: Message) {
+	requireGuildTo('use battle presets', message);
 	requirePermissions(message.member);
 
 	if (presetsByGuildID[message.guild.id]?.size >= MAX_PRESET_COUNT) {
@@ -34,6 +35,4 @@ const saveBattlePreset = async (message: Message) => {
 	await savePresets();
 
 	await send(battle.channel, `Battle preset "${presetName}" saved!`, SUCCESS_COLOR);
-};
-
-export default saveBattlePreset;
+}

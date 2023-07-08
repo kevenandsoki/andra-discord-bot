@@ -1,6 +1,6 @@
 import Battle from 'Battle';
 import Team from 'Team';
-import { GuildTextBasedChannel, Role } from 'discord.js';
+import { TextBasedChannel, Role, ChannelType } from 'discord.js';
 
 export type CharacterJSON = ReturnType<Character['toJSON']>;
 
@@ -9,7 +9,7 @@ export default class Character {
 
 	team: Team;
 	battle: Battle;
-	channel: GuildTextBasedChannel;
+	channel: TextBasedChannel;
 	letter: string;
 	role?: Role;
 
@@ -38,6 +38,10 @@ export default class Character {
 		this.letter = letter.toUpperCase();
 
 		if (roleID !== undefined) {
+			if (!('guild' in this.channel)) {
+				throw new Error('Roles do not exist outside servers. Please use "N/A" for any roles in battles here.');
+			}
+
 			this.role = this.channel.guild.roles.resolve(roleID) ?? undefined;
 		}
 

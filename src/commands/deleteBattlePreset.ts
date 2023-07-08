@@ -1,9 +1,10 @@
 import send from 'send';
 import { presetsByGuildID, savePresets } from 'presets';
-import { requirePermissions } from '.';
+import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
 
-const deleteBattlePreset = async (message: Message) => {
+export default async function deleteBattlePreset(message: Message) {
+	requireGuildTo('use battle presets', message);
 	requirePermissions(message.member);
 
 	const match = message.content.match(/^>> ?delete battle preset "([\w-]+)"$/i);
@@ -32,6 +33,4 @@ const deleteBattlePreset = async (message: Message) => {
 	await savePresets();
 
 	await send(message.channel, `Preset ${presetName} deleted.`);
-};
-
-export default deleteBattlePreset;
+}

@@ -1,6 +1,6 @@
 import Team from 'Team';
 import send from 'send';
-import { GuildTextBasedChannel } from 'discord.js';
+import { TextBasedChannel } from 'discord.js';
 
 export const battles: Battle[] = [];
 
@@ -12,13 +12,13 @@ export default class Battle {
 	teams: Team[] = [];
 	turnIndex = 0;
 
-	channel: GuildTextBasedChannel;
+	channel: TextBasedChannel;
 	width: number;
 	height: number;
 	commandText: string;
 
 	constructor(
-		channel: GuildTextBasedChannel,
+		channel: TextBasedChannel,
 		width: number,
 		height: number,
 		commandText: string,
@@ -31,7 +31,7 @@ export default class Battle {
 		battles.push(this);
 	}
 
-	static getBattleInChannel(channel: GuildTextBasedChannel) {
+	static getBattleInChannel(channel: TextBasedChannel) {
 		const battle = battles.find(battle => battle.channel === channel);
 
 		if (!battle) {
@@ -41,7 +41,7 @@ export default class Battle {
 		return battle;
 	}
 
-	static fromJSON(channel: GuildTextBasedChannel, battleJSON: BattleJSON) {
+	static fromJSON(channel: TextBasedChannel, battleJSON: BattleJSON) {
 		const battle = new Battle(
 			channel,
 			battleJSON.width,

@@ -1,9 +1,10 @@
 import send from 'send';
 import { presetsByGuildID } from 'presets';
-import { requirePermissions } from '.';
+import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
 
-const listBattlePresets = async (message: Message) => {
+export default async function listBattlePresets(message: Message) {
+	requireGuildTo('use battle presets', message);
 	requirePermissions(message.member);
 
 	const presets = presetsByGuildID[message.guild.id];
@@ -31,6 +32,4 @@ const listBattlePresets = async (message: Message) => {
 	listText += '```';
 
 	await send(message.channel, listText);
-};
-
-export default listBattlePresets;
+}

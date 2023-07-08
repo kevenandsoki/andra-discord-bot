@@ -4,7 +4,7 @@ import send from 'send';
 import { Message } from 'discord.js';
 import Character from 'Character';
 
-const runMoveSubcommand = (subcommand: string, battle: Battle) => {
+function runMoveSubcommand(subcommand: string, battle: Battle) {
 	const match = subcommand.match(/^move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/);
 
 	if (!match) {
@@ -20,11 +20,11 @@ const runMoveSubcommand = (subcommand: string, battle: Battle) => {
 	}
 
 	battle.turnCharacter.move(+match[1], match[2]);
-};
+}
 
 type DamageByTarget = Map<Character, number>;
 
-const runAttackSubcommand = (subcommand: string, battle: Battle, damageByTarget: DamageByTarget) => {
+function runAttackSubcommand(subcommand: string, battle: Battle, damageByTarget: DamageByTarget) {
 	const match = subcommand.match(/^attack(?: ([a-z]))? (\d+)$/);
 
 	if (!match) {
@@ -43,9 +43,9 @@ const runAttackSubcommand = (subcommand: string, battle: Battle, damageByTarget:
 
 	const totalDamage = damageByTarget.get(target) ?? 0;
 	damageByTarget.set(target, totalDamage + damage);
-};
+}
 
-const moveOrAttack = async (message: Message) => {
+export default async function moveOrAttack(message: Message) {
 	const subcommands = message.content.replace(/^>>/, '').toLowerCase().split(',');
 
 	const battle = Battle.getBattleInChannel(message.channel);
@@ -89,10 +89,8 @@ const moveOrAttack = async (message: Message) => {
 	await send(
 		battle.channel,
 		response,
-		battle.turnCharacter.role?.color,
+		battle.turnCharacter.role?.color
 	);
 
 	await battle.updateTurn();
-};
-
-export default moveOrAttack;
+}
