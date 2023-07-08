@@ -1,5 +1,3 @@
-'use strict';
-
 export default class Character {
 	static MAX_STAT_VALUE = 100_000_000;
 

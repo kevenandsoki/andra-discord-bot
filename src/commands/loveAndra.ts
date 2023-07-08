@@ -1,6 +1,4 @@
-'use strict';
-
-import send from '../send.js';
+import send from 'send';
 
 const loveAndra = async message => {
 	await send(message.channel, 'Andra loves you too.');

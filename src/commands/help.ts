@@ -1,7 +1,5 @@
-'use strict';
-
-import commands from './index.js';
-import send from '../send.js';
+import commands from '.';
+import send from 'send';
 
 const help = async message => {
 	let helpText = 'Here is a list of the commands available:\n';
@@ -25,3 +23,4 @@ const help = async message => {
 };
 
 export default help;
+ok lo

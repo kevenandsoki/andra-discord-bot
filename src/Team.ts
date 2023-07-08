@@ -1,7 +1,5 @@
-'use strict';
-
-import Character from './Character.js';
-import send from './send.js';
+import Character from 'Character';
+import send from 'send';
 
 export default class Team {
 	characters = [];

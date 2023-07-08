@@ -1,9 +1,7 @@
-'use strict';
-
-import Battle from '../Battle.js';
-import send, { SUCCESS_COLOR } from '../send.js';
-import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from '../presets.js';
-import { requirePermissions } from './index.js';
+import Battle from 'Battle';
+import send, { SUCCESS_COLOR } from 'send';
+import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from 'presets';
+import { requirePermissions } from '.';
 
 const saveBattlePreset = async message => {
 	requirePermissions(message.member);

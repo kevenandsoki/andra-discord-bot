@@ -1,8 +1,8 @@
-'use strict';
+import Team from 'Team';
+import { battle } from 'Battle';
+import send from 'send';
 
-import Team from './Team.js';
-import { battles, deepCloneWithPrototypes } from './index.js';
-import send from './send.js';
+export const battles = [];
 
 export default class Battle {
 	static MAX_CHARACTER_COUNT = 50;

@@ -1,7 +1,5 @@
-'use strict';
-
-import Battle from '../Battle.js';
-import send from '../send.js';
+import Battle from 'Battle';
+import send from 'send';
 
 const endBattle = async message => {
 	const battle = Battle.getBattleInChannel(message.channel);

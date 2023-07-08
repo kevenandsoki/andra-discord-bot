@@ -1,8 +1,6 @@
-'use strict';
-
-import send from '../send.js';
-import { presetsByGuildID, savePresets } from '../presets.js';
-import { requirePermissions } from './index.js';
+import send from 'send';
+import { presetsByGuildID, savePresets } from 'presets';
+import { requirePermissions } from '.';
 
 const deleteBattlePreset = async message => {
 	requirePermissions(message.member);

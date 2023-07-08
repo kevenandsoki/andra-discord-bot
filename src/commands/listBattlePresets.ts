@@ -1,8 +1,6 @@
-'use strict';
-
-import send from '../send.js';
-import { presetsByGuildID } from '../presets.js';
-import { requirePermissions } from './index.js';
+import send from 'send';
+import { presetsByGuildID } from 'presets';
+import { requirePermissions } from '.';
 
 const listBattlePresets = async message => {
 	requirePermissions(message.member);

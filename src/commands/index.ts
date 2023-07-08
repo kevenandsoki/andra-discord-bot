@@ -1,18 +1,16 @@
-'use strict';
-
 import { PermissionsBitField } from 'discord.js';
-import send, { ERROR_COLOR } from '../send.js';
-import help from './help.js';
-import startBattle from './startBattle.js';
-import endBattle from './endBattle.js';
-import moveOrAttack from './moveOrAttack.js';
-import saveBattlePreset from './saveBattlePreset.js';
-import loadBattlePreset from './loadBattlePreset.js';
-import deleteBattlePreset from './deleteBattlePreset.js';
-import listBattlePresets from './listBattlePresets.js';
-import viewBattlePreset from './viewBattlePreset.js';
-import loveAndra from './loveAndra.js';
-import dance from './dance.js';
+import send, { ERROR_COLOR } from 'send';
+import help from './help';
+import startBattle from './startBattle';
+import endBattle from './endBattle';
+import moveOrAttack from './moveOrAttack';
+import saveBattlePreset from './saveBattlePreset';
+import loadBattlePreset from './loadBattlePreset';
+import deleteBattlePreset from './deleteBattlePreset';
+import listBattlePresets from './listBattlePresets';
+import viewBattlePreset from './viewBattlePreset';
+import loveAndra from './loveAndra';
+import dance from './dance';
 
 export const UNKNOWN_COMMAND_TEXT = 'I do not recognize that command. For help with commands, type ">> help".';
 

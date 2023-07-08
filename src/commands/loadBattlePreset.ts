@@ -1,8 +1,6 @@
-'use strict';
-
-import Battle from '../Battle.js';
-import { presetsByGuildID } from '../presets.js';
-import send from '../send.js';
+import Battle from 'Battle';
+import { presetsByGuildID } from 'presets';
+import send from 'send';
 
 const loadBattlePreset = async message => {
 	const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);

@@ -1,8 +1,6 @@
-'use strict';
-
-import Battle from '../Battle.js';
-import { UNKNOWN_COMMAND_TEXT } from './index.js';
-import send from '../send.js';
+import Battle from 'Battle';
+import { UNKNOWN_COMMAND_TEXT } from '.';
+import send from 'send';
 
 const runMoveSubcommand = (subcommand, battle) => {
 	const match = subcommand.match(/^move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/);

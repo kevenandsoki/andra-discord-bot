@@ -1,5 +1,3 @@
-'use strict';
-
 import fs from 'node:fs/promises';
 
 export const MAX_PRESET_COUNT = 100;
