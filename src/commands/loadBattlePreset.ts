@@ -1,8 +1,9 @@
 import Battle from 'Battle';
+import { Message } from 'discord.js';
 import { presetsByGuildID } from 'presets';
 import send from 'send';
 
-const loadBattlePreset = async message => {
+const loadBattlePreset = async (message: Message) => {
 	const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);
 
 	if (!match) {

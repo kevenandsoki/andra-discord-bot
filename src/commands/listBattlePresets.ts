@@ -1,8 +1,9 @@
 import send from 'send';
 import { presetsByGuildID } from 'presets';
 import { requirePermissions } from '.';
+import { Message } from 'discord.js';
 
-const listBattlePresets = async message => {
+const listBattlePresets = async (message: Message) => {
 	requirePermissions(message.member);
 
 	const presets = presetsByGuildID[message.guild.id];

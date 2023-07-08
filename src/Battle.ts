@@ -1,16 +1,28 @@
 import Team from 'Team';
-import { battle } from 'Battle';
 import send from 'send';
+import { GuildTextBasedChannel } from 'discord.js';
 
-export const battles = [];
+export const battles: Battle[] = [];
+
+export type BattleJSON = ReturnType<Battle['toJSON']>;
 
 export default class Battle {
 	static MAX_CHARACTER_COUNT = 50;
 
-	teams = [];
+	teams: Team[] = [];
 	turnIndex = 0;
 
-	constructor(channel, width, height, commandText) {
+	channel: GuildTextBasedChannel;
+	width: number;
+	height: number;
+	commandText: string;
+
+	constructor(
+		channel: GuildTextBasedChannel,
+		width: number,
+		height: number,
+		commandText: string,
+	) {
 		this.channel = channel;
 		this.width = width || 6;
 		this.height = height || 1;
@@ -19,7 +31,7 @@ export default class Battle {
 		battles.push(this);
 	}
 
-	static getBattleInChannel(channel) {
+	static getBattleInChannel(channel: GuildTextBasedChannel) {
 		const battle = battles.find(battle => battle.channel === channel);
 
 		if (!battle) {
@@ -29,7 +41,7 @@ export default class Battle {
 		return battle;
 	}
 
-	static fromJSON(channel, battleJSON) {
+	static fromJSON(channel: GuildTextBasedChannel, battleJSON: BattleJSON) {
 		const battle = new Battle(
 			channel,
 			battleJSON.width,
@@ -63,7 +75,7 @@ export default class Battle {
 		return this.characters[this.turnIndex];
 	}
 
-	getCharactersByPos({ x, y }) {
+	getCharactersByPos({ x, y }: { x: number, y: number }) {
 		let characters = this.characters;
 
 		if (x !== undefined) {
@@ -76,11 +88,11 @@ export default class Battle {
 		return characters;
 	}
 
-	getCharactersByLetter(letter) {
+	getCharactersByLetter(letter: string) {
 		return this.characters.filter(characters => characters.letter === letter);
 	}
 
-	isOutOfBounds(x, y) {
+	isOutOfBounds(x: number, y: number) {
 		return (
 			x < 0 || x >= this.width ||
 			y < 0 || y >= this.height
@@ -124,7 +136,7 @@ export default class Battle {
 		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
 	}
 
-	atomically(callback) {
+	atomically(callback: () => void) {
 		const battleClone = deepCloneWithPrototypes(this);
 
 		try {

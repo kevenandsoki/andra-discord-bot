@@ -2,8 +2,9 @@ import Battle from 'Battle';
 import send, { SUCCESS_COLOR } from 'send';
 import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from 'presets';
 import { requirePermissions } from '.';
+import { Message } from 'discord.js';
 
-const saveBattlePreset = async message => {
+const saveBattlePreset = async (message: Message) => {
 	requirePermissions(message.member);
 
 	if (presetsByGuildID[message.guild.id]?.size >= MAX_PRESET_COUNT) {

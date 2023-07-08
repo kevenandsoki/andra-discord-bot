@@ -1,13 +1,45 @@
+import Battle from 'Battle';
+import Team from 'Team';
+import { GuildTextBasedChannel, Role } from 'discord.js';
+
+export type CharacterJSON = ReturnType<Character['toJSON']>;
+
 export default class Character {
 	static MAX_STAT_VALUE = 100_000_000;
 
-	constructor(team, letter, roleID, hp, atk, rng, spd) {
+	team: Team;
+	battle: Battle;
+	channel: GuildTextBasedChannel;
+	letter: string;
+	role?: Role;
+
+	hp: number;
+	atk: number;
+	rng: number;
+	spd: number;
+
+	maxHP: number;
+	x: number;
+	y: number;
+
+	constructor(
+		team: Team,
+		letter: string,
+		roleID: string | undefined,
+		hp: number | string,
+		atk: number | string,
+		rng: number | string,
+		spd: number | string,
+	) {
 		this.team = team;
 		this.battle = this.team.battle;
 		this.channel = this.battle.channel;
 
 		this.letter = letter.toUpperCase();
-		this.role = this.channel.guild.roles.resolve(roleID) ?? undefined;
+
+		if (roleID !== undefined) {
+			this.role = this.channel.guild.roles.resolve(roleID) ?? undefined;
+		}
 
 		this.hp = +hp;
 		this.atk = +atk;
@@ -27,14 +59,14 @@ export default class Character {
 			this.x = this.battle.width - 1;
 		}
 
-		this.goToLeastCrowdedRow();
+		this.y = this.getLeastCrowdedY();
 
 		this.team.characters.push(this);
 	}
 
-	static fromString(team, string) {
+	static fromString(team: Team, string: string) {
 		const match = string.match(/^(\*)?([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+)$/i);
-		const [, hasFirstTurn, letter, roleID, hp, atk, rng, spd] = match;
+		const [, hasFirstTurn, letter, roleID, hp, atk, rng, spd] = match!;
 
 		const character = new Character(team, letter, roleID, hp, atk, rng, spd);
 
@@ -45,7 +77,7 @@ export default class Character {
 		return character;
 	}
 
-	static fromJSON(team, characterJSON) {
+	static fromJSON(team: Team, characterJSON: CharacterJSON) {
 		return new Character(
 			team,
 			characterJSON.letter,
@@ -68,28 +100,29 @@ export default class Character {
 		};
 	}
 
-	goToLeastCrowdedRow() {
+	getLeastCrowdedY() {
 		const yValues = [...new Array(this.battle.height)].map((_, i) => i);
 
 		const rowCharacterCounts = yValues.map(y => this.battle.getCharactersByPos({ x: this.x, y }).length);
 		const leastRowCharacterCount = Math.min(...rowCharacterCounts);
 		const leastCrowdedRows = yValues.filter(y => this.battle.getCharactersByPos({ x: this.x, y }).length === leastRowCharacterCount);
 
-		this.y = leastCrowdedRows[Math.floor(Math.random() * leastCrowdedRows.length)];
+		return leastCrowdedRows[Math.floor(Math.random() * leastCrowdedRows.length)];
 	}
 
-	distanceTo(character) {
+	distanceTo(character: Character) {
 		const xDistance = Math.abs(this.x - character.x);
 		const yDistance = Math.abs(this.y - character.y);
 		return Math.max(xDistance, yDistance);
 	}
 
-	realDistanceTo(character) {
+	realDistanceTo(character: Character) {
 		const xDistance = Math.abs(this.x - character.x);
 		const yDistance = Math.abs(this.y - character.y);
 		return Math.sqrt(xDistance ** 2 + yDistance ** 2);
 	}
-	move(distance, direction) {
+
+	move(distance: number, direction: string) {
 		if (distance > this.spd) {
 			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot move that far.`);
 		}
@@ -128,7 +161,7 @@ export default class Character {
 		this.y = y;
 	}
 
-	attack(targetLetter, count) {
+	attack(targetLetter: string, count: number) {
 		if (count > this.spd) {
 			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot attack that many times.`);
 		}
@@ -152,17 +185,18 @@ export default class Character {
 			}
 		}
 
-		if (this.distanceTo(target) > this.rng) {
+		// `target` is asserted as non-null because the above loop must run at least once.
+		if (this.distanceTo(target!) > this.rng) {
 			throw new Error(`Character ${target} is outside of character ${this}'s range.`);
 		}
 
 		const damage = this.atk * count;
-		target.damage(damage);
+		target!.damage(damage);
 
-		return { damage, target };
+		return { damage, target: target! };
 	}
 
-	damage(damage) {
+	damage(damage: number) {
 		this.hp = Math.max(0, this.hp - damage);
 
 		if (this.hp === 0) {

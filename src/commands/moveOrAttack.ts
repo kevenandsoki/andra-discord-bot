@@ -1,8 +1,10 @@
 import Battle from 'Battle';
 import { UNKNOWN_COMMAND_TEXT } from '.';
 import send from 'send';
+import { Message } from 'discord.js';
+import Character from 'Character';
 
-const runMoveSubcommand = (subcommand, battle) => {
+const runMoveSubcommand = (subcommand: string, battle: Battle) => {
 	const match = subcommand.match(/^move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/);
 
 	if (!match) {
@@ -20,7 +22,9 @@ const runMoveSubcommand = (subcommand, battle) => {
 	battle.turnCharacter.move(+match[1], match[2]);
 };
 
-const runAttackSubcommand = (subcommand, battle, damageByTarget) => {
+type DamageByTarget = Map<Character, number>;
+
+const runAttackSubcommand = (subcommand: string, battle: Battle, damageByTarget: DamageByTarget) => {
 	const match = subcommand.match(/^attack(?: ([a-z]))? (\d+)$/);
 
 	if (!match) {
@@ -41,12 +45,12 @@ const runAttackSubcommand = (subcommand, battle, damageByTarget) => {
 	damageByTarget.set(target, totalDamage + damage);
 };
 
-const moveOrAttack = async message => {
+const moveOrAttack = async (message: Message) => {
 	const subcommands = message.content.replace(/^>>/, '').toLowerCase().split(',');
 
 	const battle = Battle.getBattleInChannel(message.channel);
 
-	const damageByTarget = new Map();
+	const damageByTarget: DamageByTarget = new Map();
 
 	battle.atomically(() => {
 		for (const rawSubcommand of subcommands) {

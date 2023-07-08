@@ -1,8 +1,9 @@
 import Battle, { battles } from 'Battle';
 import Team from 'Team';
+import { Message } from 'discord.js';
 import send from 'send';
 
-const startBattle = async message => {
+const startBattle = async (message: Message) => {
 	const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);
 
 	if (!match) {

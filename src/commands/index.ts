@@ -1,4 +1,4 @@
-import { PermissionsBitField } from 'discord.js';
+import { GuildMember, Message, PermissionsBitField } from 'discord.js';
 import send, { ERROR_COLOR } from 'send';
 import help from './help';
 import startBattle from './startBattle';
@@ -14,13 +14,19 @@ import dance from './dance';
 
 export const UNKNOWN_COMMAND_TEXT = 'I do not recognize that command. For help with commands, type ">> help".';
 
-export const requirePermissions = member => {
+export const requirePermissions = (member: GuildMember | null) => {
+	if (member === null) {
+		// The member left the server between when the message was created and now.
+		throw new Error("Goodbye!");
+	}
+
 	if (!member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
 		throw new Error("You must have \"Manage Messages\" permissions in this server to do that.");
 	}
 };
 
 const commands = {
+	'hi': greet,
 	'i love you andra :D': loveAndra,
 	'dance': dance,
 	'help': help,
@@ -36,7 +42,7 @@ const commands = {
 
 export default commands;
 
-export const handleCommand = async message => {
+export const handleCommand = async (message: Message) => {
 	let runCommand;
 	for (const [commandName, commandFunction] of Object.entries(commands)) {
 		if (new RegExp(`^>> ?(?:${commandName})`).test(message.content)) {
@@ -51,7 +57,7 @@ export const handleCommand = async message => {
 
 	try {
 		await runCommand(message);
-	} catch (error) {
+	} catch (error: any) {
 		await send(message.channel, error.toString(), ERROR_COLOR);
 
 		if (error.constructor !== Error) {

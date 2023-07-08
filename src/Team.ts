@@ -1,16 +1,20 @@
+import Battle from 'Battle';
 import Character from 'Character';
 import send from 'send';
 
-export default class Team {
-	characters = [];
+export type TeamJSON = ReturnType<Team['toJSON']>;
 
-	constructor(battle) {
+export default class Team {
+	battle: Battle;
+	characters: Character[] = [];
+
+	constructor(battle: Battle) {
 		this.battle = battle;
 
 		this.battle.teams.push(this);
 	}
 
-	static fromString(battle, string) {
+	static fromString(battle: Battle, string: string) {
 		const team = new Team(battle);
 
 		const lines = string.trim().split('\n');
@@ -19,7 +23,7 @@ export default class Team {
 		return team;
 	}
 
-	static fromJSON(battle, teamJSON) {
+	static fromJSON(battle: Battle, teamJSON: TeamJSON) {
 		const team = new Team(battle);
 
 		for (const characterJSON of teamJSON.characters) {
@@ -35,7 +39,7 @@ export default class Team {
 		};
 	}
 
-	isNth(n) {
+	isNth(n: number) {
 		return this === this.battle.teams[n];
 	}
 

@@ -1,7 +1,8 @@
+import { Message } from 'discord.js';
 import commands from '.';
 import send from 'send';
 
-const help = async message => {
+const help = async (message: Message) => {
 	let helpText = 'Here is a list of the commands available:\n';
 
 	helpText += '```\n';
@@ -23,4 +24,3 @@ const help = async message => {
 };
 
 export default help;
-ok lo

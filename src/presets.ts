@@ -1,16 +1,17 @@
+import { BattleJSON } from 'Battle';
 import fs from 'node:fs/promises';
 
 export const MAX_PRESET_COUNT = 100;
 
-const mapReviver = (_, value) => {
+const mapReviver = (_: unknown, value: unknown) => {
 	if (Array.isArray(value) && value.every(Array.isArray)) {
-		return new Map(value);
+		return new Map(value as any);
 	}
 
 	return value;
 };
 
-const mapReplacer = (_, value) => {
+const mapReplacer = (_: unknown, value: unknown) => {
 	if (value instanceof Map) {
 		return Array.from(value);
 	}
@@ -18,7 +19,9 @@ const mapReplacer = (_, value) => {
 	return value;
 };
 
-export let presetsByGuildID = {};
+export type PresetsByName = Map<string, BattleJSON>;
+
+export let presetsByGuildID: Record<string, PresetsByName> = {};
 
 fs.readFile('data/presets.json', 'utf8').then(string => {
 	presetsByGuildID = JSON.parse(string, mapReviver);

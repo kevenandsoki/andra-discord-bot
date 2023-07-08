@@ -1,7 +1,8 @@
 import Battle from 'Battle';
+import { Message } from 'discord.js';
 import send from 'send';
 
-const endBattle = async message => {
+const endBattle = async (message: Message) => {
 	const battle = Battle.getBattleInChannel(message.channel);
 
 	battle.remove();
