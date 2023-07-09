@@ -1,7 +1,7 @@
-import Battle, { battles } from 'Battle';
-import Team from 'Team';
 import { Message } from 'discord.js';
-import send from 'send';
+import Battle, { battles } from '../Battle';
+import Team from '../Team';
+import send from '../send';
 
 export default async function startBattle(message: Message) {
 	const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);

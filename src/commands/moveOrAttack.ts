@@ -1,8 +1,8 @@
-import Battle from 'Battle';
-import { UNKNOWN_COMMAND_TEXT } from '.';
-import send from 'send';
 import { Message } from 'discord.js';
-import Character from 'Character';
+import Battle from '../Battle';
+import { UNKNOWN_COMMAND_TEXT } from '.';
+import send from '../send';
+import Character from '../Character';
 
 function runMoveSubcommand(subcommand: string, battle: Battle) {
 	const match = subcommand.match(/^move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/);
@@ -25,21 +25,21 @@ function runMoveSubcommand(subcommand: string, battle: Battle) {
 type DamageByTarget = Map<Character, number>;
 
 function runAttackSubcommand(subcommand: string, battle: Battle, damageByTarget: DamageByTarget) {
-	const match = subcommand.match(/^attack(?: ([a-z]))? (\d+)$/);
+	const match = subcommand.match(/^attack (\d+)(?: ([a-z]))?$/);
 
 	if (!match) {
 		return send(
 			battle.channel,
 			'To use the "Attack" command, follow this format:\n' +
 			'```\n' +
-			'>> attack [target] [count]\n' +
+			'>> attack [count] [target]\n' +
 			'```\n' +
 			'Note that while "character to attack" is optional, your attack will default to the closest enemy (character on the opposing team).\n' +
 			'If you are not in range of the character you chose or the closest enemy, then the command will fail and you will be asked to retry.'
 		);
 	}
 
-	const { target, damage } = battle.turnCharacter.attack(match[1], +match[2]);
+	const { target, damage } = battle.turnCharacter.attack(+match[1], match[2]);
 
 	const totalDamage = damageByTarget.get(target) ?? 0;
 	damageByTarget.set(target, totalDamage + damage);
@@ -61,7 +61,7 @@ export default async function moveOrAttack(message: Message) {
 			} else if (subcommand.startsWith('attack')) {
 				runAttackSubcommand(subcommand, battle, damageByTarget);
 			} else {
-				return send(battle.channel, UNKNOWN_COMMAND_TEXT);
+				throw new Error(UNKNOWN_COMMAND_TEXT);
 			}
 		}
 	});

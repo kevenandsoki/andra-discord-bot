@@ -1,6 +1,6 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import config from '../config.json';
-import { handleCommand } from 'commands';
+import { handleCommand } from './commands';
 
 const client = new Client({
 	intents: [

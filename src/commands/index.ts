@@ -1,5 +1,5 @@
 import { GuildMember, Message, PermissionsBitField } from 'discord.js';
-import send, { ERROR_COLOR } from 'send';
+import send, { ERROR_COLOR } from '../send';
 import help from './help';
 import startBattle from './startBattle';
 import endBattle from './endBattle';
@@ -35,14 +35,19 @@ export function requirePermissions(member: GuildMember | null) {
 	}
 }
 
-const commands = {
+type CommandFunction = (message: Message) => void | Promise<void>;
+
+export type Command = CommandFunction & { unlisted?: boolean };
+
+const commands: Record<string, Command> = {
 	'hi': greet,
 	'i love you andra :D': loveAndra,
 	'dance': dance,
 	'help': help,
 	'start battle': startBattle,
 	'end battle': endBattle,
-	'move|attack': moveOrAttack,
+	'move': moveOrAttack,
+	'attack': moveOrAttack,
 	'save battle preset': saveBattlePreset,
 	'load battle preset': loadBattlePreset,
 	'delete battle preset': deleteBattlePreset,
@@ -54,18 +59,18 @@ export default commands;
 
 export async function handleCommand(message: Message) {
 	let runCommand;
-	for (const [commandName, commandFunction] of Object.entries(commands)) {
-		if (new RegExp(`^>> ?(?:${commandName})`).test(message.content)) {
-			runCommand = commandFunction;
+	for (const [commandName, command] of Object.entries(commands)) {
+		if (new RegExp(`^>> ?${commandName}`).test(message.content)) {
+			runCommand = command;
 			break;
 		}
 	}
 
-	if (!runCommand) {
-		return send(message.channel, UNKNOWN_COMMAND_TEXT);
-	}
-
 	try {
+		if (!runCommand) {
+			throw new Error(UNKNOWN_COMMAND_TEXT);
+		}
+
 		await runCommand(message);
 	} catch (error: any) {
 		await send(message.channel, error.toString(), ERROR_COLOR);

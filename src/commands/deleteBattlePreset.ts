@@ -1,7 +1,7 @@
-import send from 'send';
-import { presetsByGuildID, savePresets } from 'presets';
-import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
+import send from '../send';
+import { presetsByGuildID, savePresets } from '../presets';
+import { requireGuildTo, requirePermissions } from '.';
 
 export default async function deleteBattlePreset(message: Message) {
 	requireGuildTo('use battle presets', message);

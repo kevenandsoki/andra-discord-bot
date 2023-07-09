@@ -1,6 +1,6 @@
-import Team from 'Team';
-import send from 'send';
 import { TextBasedChannel } from 'discord.js';
+import Team from './Team';
+import send from './send';
 
 export const battles: Battle[] = [];
 
@@ -116,6 +116,10 @@ export default class Battle {
 	}
 
 	async updateTurn() {
+		for (const character of this.characters) {
+			character.resetSPD();
+		}
+
 		const losingTeam = this.teams.find(team => team.characters.length === 0);
 		if (losingTeam) {
 			await losingTeam.getOtherTeam().win();
@@ -137,12 +141,12 @@ export default class Battle {
 	}
 
 	atomically(callback: () => void) {
-		const battleClone = deepCloneWithPrototypes(this);
+		// const battleClone = deepCloneWithPrototypes(this);
 
 		try {
 			callback();
 		} catch (error) {
-			battles.splice(battles.indexOf(this), 1, battleClone);
+			// battles.splice(battles.indexOf(this), 1, battleClone);
 
 			throw error;
 		}

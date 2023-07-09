@@ -1,6 +1,6 @@
-import Battle from 'Battle';
-import Character from 'Character';
-import send from 'send';
+import Battle from './Battle';
+import Character from './Character';
+import send from './send';
 
 export type TeamJSON = ReturnType<Team['toJSON']>;
 

@@ -1,5 +1,5 @@
-import Battle from 'Battle';
-import Team from 'Team';
+import Battle from './Battle';
+import Team from './Team';
 import { TextBasedChannel, Role, ChannelType } from 'discord.js';
 
 export type CharacterJSON = ReturnType<Character['toJSON']>;
@@ -19,6 +19,7 @@ export default class Character {
 	spd: number;
 
 	maxHP: number;
+	maxSPD: number;
 	x: number;
 	y: number;
 
@@ -56,6 +57,7 @@ export default class Character {
 		}
 
 		this.maxHP = this.hp;
+		this.maxSPD = this.spd;
 
 		if (this.team.isNth(0)) {
 			this.x = 0;
@@ -128,7 +130,7 @@ export default class Character {
 
 	move(distance: number, direction: string) {
 		if (distance > this.spd) {
-			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot move that far.`);
+			throw new Error(`Character ${this} only has ${this.spd}/${this.maxSPD} SPD, so you do not have enough SPD to move a distance of ${distance}.`);
 		}
 
 		direction = direction?.toLowerCase();
@@ -163,11 +165,13 @@ export default class Character {
 
 		this.x = x;
 		this.y = y;
+
+		this.spd -= distance;
 	}
 
-	attack(targetLetter: string, count: number) {
+	attack(count: number, targetLetter: string) {
 		if (count > this.spd) {
-			throw new Error(`Character ${this}'s SPD is ${this.spd}, so you cannot attack that many times.`);
+			throw new Error(`Character ${this} only has ${this.spd}/${this.maxSPD} SPD, so you do not have enough SPD to attack${count === 1 ? '' : ` ${count} times`}.`);
 		}
 
 		targetLetter = targetLetter?.toUpperCase();
@@ -197,6 +201,8 @@ export default class Character {
 		const damage = this.atk * count;
 		target!.damage(damage);
 
+		this.spd -= count;
+
 		return { damage, target: target! };
 	}
 
@@ -206,6 +212,10 @@ export default class Character {
 		if (this.hp === 0) {
 			this.remove();
 		}
+	}
+
+	resetSPD() {
+		this.spd = this.maxSPD;
 	}
 
 	remove() {

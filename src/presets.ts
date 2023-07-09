@@ -1,4 +1,4 @@
-import { BattleJSON } from 'Battle';
+import { BattleJSON } from './Battle';
 import fs from 'node:fs/promises';
 
 export const MAX_PRESET_COUNT = 100;

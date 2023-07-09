@@ -1,8 +1,8 @@
-import Battle from 'Battle';
-import send, { SUCCESS_COLOR } from 'send';
-import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from 'presets';
-import { requireGuildTo, requirePermissions } from '.';
 import { Message } from 'discord.js';
+import Battle from '../Battle';
+import send, { SUCCESS_COLOR } from '../send';
+import { MAX_PRESET_COUNT, presetsByGuildID, savePresets } from '../presets';
+import { requireGuildTo, requirePermissions } from '.';
 
 export default async function saveBattlePreset(message: Message) {
 	requireGuildTo('use battle presets', message);

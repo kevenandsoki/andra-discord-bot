@@ -1,6 +1,6 @@
-import Battle from 'Battle';
 import { Message } from 'discord.js';
-import send from 'send';
+import Battle from '../Battle';
+import send from '../send';
 
 export default async function endBattle(message: Message) {
 	const battle = Battle.getBattleInChannel(message.channel);

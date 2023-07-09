@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 import commands from '.';
-import send from 'send';
+import send from '../send';
 
 export default async function help(message: Message) {
 	let helpText = 'Here is a list of the commands available:\n';

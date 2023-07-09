@@ -10,7 +10,9 @@ user has to tell andra for each characters in battle:
 
 # to-do plan
 
-- finish multiple commands per line (move and attack)
+- atomic operations
+- VERY primitive AI for grinding
+- file-sharing
 
 # command list
 
@@ -56,9 +58,8 @@ P - - - - E
 
 # pain and suffering
 
-- SPD usage should be cumulative between subcommands
+~~- SPD usage should be cumulative between subcommands~~
 - it sent the board and updated the turn even though the atomic operation failed
 - one subcommand's success persisted even though the second one failed
-- why doesnt deep clone cause infinite recursion
 
 idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp), and array mutations such as character removal must also be reverted

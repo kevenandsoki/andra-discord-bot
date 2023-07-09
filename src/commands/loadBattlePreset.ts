@@ -1,8 +1,8 @@
-import Battle from 'Battle';
-import { requireGuildTo } from 'commands';
 import { Message } from 'discord.js';
-import { presetsByGuildID } from 'presets';
-import send from 'send';
+import Battle from '../Battle';
+import { requireGuildTo } from '../commands';
+import { presetsByGuildID } from '../presets';
+import send from '../send';
 
 export default async function loadBattlePreset(message: Message) {
 	requireGuildTo('use battle presets', message);
