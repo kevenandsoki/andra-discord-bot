@@ -10,7 +10,6 @@ user has to tell andra for each characters in battle:
 
 # to-do plan
 
-~~- atomic operations~~
 - VERY primitive AI for grinding
 - file-sharing
 
@@ -56,13 +55,17 @@ B - - - - E
 P - - - - E
 ```
 
-# pain and suffering
+# LETS DO THIS!!!
 
-~~- SPD usage should be cumulative between subcommands~~
-~~- it sent the board and updated the turn even though the atomic operation failed~~
-~~- one subcommand's success persisted even though the second one failed~~
-
-~~idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp), and array mutations such as character removal must also be reverted~~
+a team can be set as CPU-controlled by putting 'CPU' as the role.
+1.) when the turn is updated, the turnCharacter's team is checked to see if they are on a CPU team.
+2.) if they are, it runs an operation that calculates their next move. it's as follows:
+		if an enemy is within their attacking range, attack as many times as they can.
+		if they're not in range, move forward one.
+		this repeats until they are out of SPD.
+3.) their move is executed, and andra posts the CPU's move as a command
+		(note, user input for CPUs is not detected nor allowed)
+4.) when their turn is over, the turn's updated as usual, and this repeats back to 1.)
 
 # f*** typescript counter
 

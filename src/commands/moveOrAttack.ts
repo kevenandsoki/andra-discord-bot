@@ -46,13 +46,13 @@ function runAttackSubcommand(subcommand: string, battle: Battle, damageByTarget:
 }
 
 export default async function moveOrAttack(message: Message) {
-	const subcommands = message.content.replace(/^>>/, '').toLowerCase().split(',');
-
 	const battle = Battle.getBattleInChannel(message.channel);
 
-	const damageByTarget: DamageByTarget = new Map();
+	await battle.doTurn(async () => {
+		const subcommands = message.content.replace(/^>>/, '').toLowerCase().split(',');
 
-	battle.atomically(() => {
+		const damageByTarget: DamageByTarget = new Map();
+
 		for (const rawSubcommand of subcommands) {
 			const subcommand = rawSubcommand.trim();
 
@@ -64,33 +64,31 @@ export default async function moveOrAttack(message: Message) {
 				throw new Error(UNKNOWN_COMMAND_TEXT);
 			}
 		}
+
+		let dmgResponse = '';
+		let hpResponse = '';
+		let defeatResponse = '';
+
+		for (const [target, damage] of damageByTarget.entries()) {
+			if (damage === 0) {
+				continue;
+			}
+
+			dmgResponse += `${damage} DMG dealt to ${target}!\n`;
+			hpResponse += `${target} HP: ${target.hp}/${target.maxHP}\n`;
+
+			if (target.hp === 0) {
+				defeatResponse += `${target} was defeated!\n`;
+			}
+		}
+
+		let response = dmgResponse + hpResponse + defeatResponse;
+		response += battle.getBoardString();
+
+		await send(
+			battle.channel,
+			response,
+			battle.turnCharacter.role?.color
+		);
 	});
-
-	let dmgResponse = '';
-	let hpResponse = '';
-	let defeatResponse = '';
-
-	for (const [target, damage] of damageByTarget.entries()) {
-		if (damage === 0) {
-			continue;
-		}
-
-		dmgResponse += `${damage} DMG dealt to ${target}!\n`;
-		hpResponse += `${target} HP: ${target.hp}/${target.maxHP}\n`;
-
-		if (target.hp === 0) {
-			defeatResponse += `${target} was defeated!\n`;
-		}
-	}
-
-	let response = dmgResponse + hpResponse + defeatResponse;
-	response += battle.getBoardString();
-
-	await send(
-		battle.channel,
-		response,
-		battle.turnCharacter.role?.color
-	);
-
-	await battle.updateTurn();
 }

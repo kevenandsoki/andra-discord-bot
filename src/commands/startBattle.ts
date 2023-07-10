@@ -21,10 +21,6 @@ export default async function startBattle(message: Message) {
 		);
 	}
 
-	if (battles.some(battle => battle.channel === message.channel)) {
-		throw new Error('There is already an ongoing battle in this channel.');
-	}
-
 	const battle = new Battle(message.channel, +match[1], +match[2], message.content);
 	Team.fromString(battle, match[3]);
 	Team.fromString(battle, match[4]);

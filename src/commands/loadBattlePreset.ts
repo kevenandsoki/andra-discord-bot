@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import Battle from '../Battle';
+import Battle, { battles } from '../Battle';
 import { requireGuildTo } from '../commands';
 import { presetsByGuildID } from '../presets';
 import send from '../send';
