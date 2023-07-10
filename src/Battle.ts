@@ -1,6 +1,7 @@
 import { TextBasedChannel } from 'discord.js';
 import Team from './Team';
 import send from './send';
+import { restoreProperties, saveProperties } from './rollbacks';
 
 export const battles: Battle[] = [];
 
@@ -141,12 +142,12 @@ export default class Battle {
 	}
 
 	atomically(callback: () => void) {
-		// const battleClone = deepCloneWithPrototypes(this);
+		const savedProperties = saveProperties(this);
 
 		try {
 			callback();
 		} catch (error) {
-			// battles.splice(battles.indexOf(this), 1, battleClone);
+			restoreProperties(savedProperties);
 
 			throw error;
 		}

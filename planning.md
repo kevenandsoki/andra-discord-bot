@@ -10,7 +10,7 @@ user has to tell andra for each characters in battle:
 
 # to-do plan
 
-- atomic operations
+~~- atomic operations~~
 - VERY primitive AI for grinding
 - file-sharing
 
@@ -59,7 +59,11 @@ P - - - - E
 # pain and suffering
 
 ~~- SPD usage should be cumulative between subcommands~~
-- it sent the board and updated the turn even though the atomic operation failed
-- one subcommand's success persisted even though the second one failed
+~~- it sent the board and updated the turn even though the atomic operation failed~~
+~~- one subcommand's success persisted even though the second one failed~~
 
-idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp), and array mutations such as character removal must also be reverted
+~~idea: just copy the properties that are not deep of the battle (e.g. turnCharacter, hp), and array mutations such as character removal must also be reverted~~
+
+# f*** typescript counter
+
+||
