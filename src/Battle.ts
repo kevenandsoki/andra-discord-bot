@@ -10,6 +10,7 @@ export type BattleJSON = ReturnType<Battle['toJSON']>;
 export default class Battle {
 	static MAX_CHARACTER_COUNT = 50;
 
+	loading?: Promise<void>;
 	teams: Team[] = [];
 	turnIndex = 0;
 
@@ -24,6 +25,10 @@ export default class Battle {
 		height: number,
 		commandText: string,
 	) {
+		if (battles.some(battle => battle.channel === channel)) {
+			throw new Error('There is already an ongoing battle in this channel.');
+		}
+
 		this.channel = channel;
 		this.width = width || 6;
 		this.height = height || 1;
@@ -128,6 +133,7 @@ export default class Battle {
 		}
 
 		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
+
 		await this.announceTurn();
 	}
 
@@ -141,16 +147,36 @@ export default class Battle {
 		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
 	}
 
-	atomically(callback: () => void) {
-		const savedProperties = saveProperties(this);
-
-		try {
-			callback();
-		} catch (error) {
-			restoreProperties(savedProperties);
-
-			throw error;
+	/** Runs the callback atomically and updates the turn if there were no errors. */
+	async doTurn(callback: () => void | Promise<void>) {
+		while (this.loading) {
+			await this.loading;
 		}
+
+		if (!battles.includes(this)) {
+			throw new Error('The battle has already concluded.');
+		}
+
+		this.loading = new Promise(async (resolve, reject) => {
+			const savedProperties = saveProperties(this);
+
+			try {
+				await callback();
+
+				await this.updateTurn();
+			} catch (error) {
+				restoreProperties(savedProperties);
+
+				reject(error);
+				return;
+			} finally {
+				this.loading = undefined;
+			}
+
+			resolve();
+		});
+
+		return this.loading;
 	}
 
 	remove() {
