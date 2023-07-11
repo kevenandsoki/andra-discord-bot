@@ -148,11 +148,6 @@ export default class Battle {
 		this.turnCharacter = this.characters[turnIndex];
 
 		await this.announceTurn();
-
-		if (this.turnCharacter.isCPU) {
-			// Don't await this because it isn't part of this turn.
-			this.turnCharacter.sendCPUCommand();
-		}
 	}
 
 	async announceStart() {
@@ -176,6 +171,11 @@ export default class Battle {
 		}
 
 		await this.channel.send(roleText);
+
+		if (this.turnCharacter.isCPU) {
+			// Don't await this because it isn't part of this turn.
+			this.turnCharacter.sendCPUCommand();
+		}
 	}
 
 	/** Runs the callback atomically and updates the turn if there were no errors. */

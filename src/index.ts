@@ -16,6 +16,10 @@ client.once(Events.ClientReady, () => {
 });
 
 client.on(Events.MessageCreate, async message => {
+	if (message.author.id === client.user!.id) {
+		return;
+	}
+
 	if (!message.content.startsWith('>>')) {
 		return;
 	}

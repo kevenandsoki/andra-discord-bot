@@ -1,6 +1,6 @@
 import Battle from './Battle';
 import Character from './Character';
-import send from './send';
+import send, { SUCCESS_COLOR } from './send';
 
 export type TeamJSON = ReturnType<Team['toJSON']>;
 
@@ -62,7 +62,7 @@ export default class Team {
 		winnerText += ` win${winnerTexts.length === 1 ? 's' : ''}!`;
 		winnerText += ' The battle has concluded.';
 
-		await send(this.battle.channel, winnerText);
+		await send(this.battle.channel, winnerText, SUCCESS_COLOR);
 		this.battle.remove();
 	}
 }

@@ -2,6 +2,7 @@ import Battle from './Battle';
 import Team from './Team';
 import { TextBasedChannel, Role } from 'discord.js';
 import timeOut from './timeOut';
+import { handleCommand } from './commands';
 
 export type CharacterJSON = ReturnType<Character['toJSON']>;
 
@@ -266,7 +267,10 @@ export default class Character {
 			subcommands.push(`attack ${spdLeft} ${target.letter}`);
 		}
 
-		await this.battle.channel.send(`>> ${subcommands.join(', ')}`);
+		const message = await this.battle.channel.send(`>> ${subcommands.join(', ')}`);
+
+		// We can't just let the message event listener handle this because, from our testing, it doesn't always detect it.
+		await handleCommand(message);
 	}
 
 	resetSPD() {
