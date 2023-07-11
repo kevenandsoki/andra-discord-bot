@@ -173,7 +173,7 @@ export default class Battle {
 		await this.channel.send(roleText);
 
 		if (this.turnCharacter.isCPU) {
-			// Don't await this because it isn't part of this turn.
+			// Don't await this because it should run independently of announcing the turn.
 			this.turnCharacter.sendCPUCommand();
 		}
 	}
