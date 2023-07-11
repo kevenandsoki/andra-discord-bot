@@ -10,8 +10,7 @@ export default async function deleteBattlePreset(message: Message) {
 	const match = message.content.match(/^>> ?delete battle preset "([\w-]+)"$/i);
 
 	if (!match) {
-		return send(
-			message.channel,
+		throw new Error(
 			'To delete a battle preset, follow this format:\n' +
 			'```\n' +
 			'>> delete battle preset "name_here"\n' +

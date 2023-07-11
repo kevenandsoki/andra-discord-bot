@@ -10,8 +10,7 @@ export default async function loadBattlePreset(message: Message) {
 	const match = message.content.match(/^>> ?load battle preset "([\w-]+)"$/i);
 
 	if (!match) {
-		return send(
-			message.channel,
+		throw new Error(
 			'To load a battle preset, follow this format:\n' +
 			'```\n' +
 			'>> load battle preset "name_here"\n' +

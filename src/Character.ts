@@ -1,16 +1,19 @@
 import Battle from './Battle';
 import Team from './Team';
-import { TextBasedChannel, Role, ChannelType } from 'discord.js';
+import { TextBasedChannel, Role } from 'discord.js';
+import timeOut from './timeOut';
 
 export type CharacterJSON = ReturnType<Character['toJSON']>;
 
 export default class Character {
-	static MAX_STAT_VALUE = 100_000_000;
+	static readonly MAX_STAT_VALUE = 100_000_000;
+	static readonly CPU_COMMAND_DELAY = 1000;
 
 	team: Team;
 	battle: Battle;
 	channel: TextBasedChannel;
 	letter: string;
+	isCPU: boolean;
 	role?: Role;
 
 	hp: number;
@@ -26,6 +29,7 @@ export default class Character {
 	constructor(
 		team: Team,
 		letter: string,
+		isCPU: boolean,
 		roleID: string | undefined,
 		hp: number | string,
 		atk: number | string,
@@ -37,12 +41,9 @@ export default class Character {
 		this.channel = this.battle.channel;
 
 		this.letter = letter.toUpperCase();
+		this.isCPU = isCPU;
 
-		if (roleID !== undefined) {
-			if (!('guild' in this.channel)) {
-				throw new Error('Roles do not exist outside servers. Please use "N/A" for any roles in battles here.');
-			}
-
+		if (roleID !== undefined && 'guild' in this.channel) {
 			this.role = this.channel.guild.roles.resolve(roleID) ?? undefined;
 		}
 
@@ -68,16 +69,20 @@ export default class Character {
 		this.y = this.getLeastCrowdedY();
 
 		this.team.characters.push(this);
+
+		if (this === this.battle.characters[0]) {
+			this.battle.turnCharacter = this;
+		}
 	}
 
 	static fromString(team: Team, string: string) {
-		const match = string.match(/^(\*)?([a-z]), (?:N\/A|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+)$/i);
-		const [, hasFirstTurn, letter, roleID, hp, atk, rng, spd] = match!;
+		const match = string.match(/^(\*)?([a-z]), (?:N\/A|(CPU)|<@&(\d+)>), (\d+), (\d+), (\d+), (\d+)$/i);
+		const [, hasFirstTurn, letter, cpuString, roleID, hp, atk, rng, spd] = match!;
 
-		const character = new Character(team, letter, roleID, hp, atk, rng, spd);
+		const character = new Character(team, letter, !!cpuString, roleID, hp, atk, rng, spd);
 
 		if (hasFirstTurn) {
-			character.battle.turnIndex = character.battle.characters.indexOf(character);
+			character.battle.turnCharacter = character;
 		}
 
 		return character;
@@ -87,6 +92,7 @@ export default class Character {
 		return new Character(
 			team,
 			characterJSON.letter,
+			characterJSON.isCPU,
 			characterJSON.roleID,
 			characterJSON.hp,
 			characterJSON.atk,
@@ -98,6 +104,7 @@ export default class Character {
 	toJSON() {
 		return {
 			letter: this.letter,
+			isCPU: this.isCPU,
 			roleID: this.role?.id,
 			hp: this.maxHP,
 			atk: this.atk,
@@ -186,24 +193,35 @@ export default class Character {
 			}
 		}
 
-		let target;
-		for (const character of potentialTargets) {
-			if (target === undefined || this.realDistanceTo(character) < this.realDistanceTo(target)) {
-				target = character;
-			}
-		}
+		const target = this.getNearestOf(potentialTargets);
 
 		// `target` is asserted as non-null because the above loop must run at least once.
-		if (this.distanceTo(target!) > this.rng) {
+		if (this.distanceTo(target) > this.rng) {
 			throw new Error(`Character ${target} is outside of character ${this}'s range.`);
 		}
 
 		const damage = this.atk * count;
-		target!.damage(damage);
+		target.damage(damage);
 
 		this.spd -= count;
 
-		return { damage, target: target! };
+		return { damage, target };
+	}
+
+	getNearestOf(characters: Character[]): Character {
+		if (characters.length === 0) {
+			throw new TypeError('You cannot get the nearest character of an empty array.');
+		}
+
+		let nearestCharacter;
+
+		for (const character of characters) {
+			if (nearestCharacter === undefined || this.realDistanceTo(character) < this.realDistanceTo(nearestCharacter)) {
+				nearestCharacter = character;
+			}
+		}
+
+		return nearestCharacter!;
 	}
 
 	damage(damage: number) {
@@ -212,6 +230,43 @@ export default class Character {
 		if (this.hp === 0) {
 			this.remove();
 		}
+	}
+
+	async sendCPUCommand() {
+		await timeOut(Character.CPU_COMMAND_DELAY);
+
+		const subcommands: string[] = [];
+
+		const target = this.getNearestOf(this.team.getOtherTeam().characters);
+
+		let spdLeft = this.spd;
+
+		const xDistance = Math.abs(this.x - target.x);
+		const yDistance = Math.abs(this.y - target.y);
+
+		if (xDistance > this.rng) {
+			const moveDistance = Math.min(xDistance - this.rng, spdLeft);
+			const moveDirection = target.x < this.x ? 'left' : 'right';
+
+			subcommands.push(`move ${moveDistance} ${moveDirection}`);
+
+			spdLeft -= moveDistance;
+		}
+
+		if (yDistance > this.rng) {
+			const moveDistance = Math.min(yDistance - this.rng, spdLeft);
+			const moveDirection = target.y < this.y ? 'down' : 'up';
+
+			subcommands.push(`move ${moveDistance} ${moveDirection}`);
+
+			spdLeft -= moveDistance;
+		}
+
+		if (spdLeft !== 0) {
+			subcommands.push(`attack ${spdLeft} ${target.letter}`);
+		}
+
+		await this.battle.channel.send(`>> ${subcommands.join(', ')}`);
 	}
 
 	resetSPD() {

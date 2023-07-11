@@ -10,8 +10,7 @@ export default async function viewBattlePreset(message: Message) {
 	const match = message.content.match(/^>> ?view battle preset "([\w-]+)"$/i);
 
 	if (!match) {
-		return send(
-			message.channel,
+		throw new Error(
 			'To view a battle preset, follow this format:\n' +
 			'```\n' +
 			'>> view battle preset "name_here"\n' +

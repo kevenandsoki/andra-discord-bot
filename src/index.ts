@@ -2,7 +2,7 @@ import { Client, Events, GatewayIntentBits } from 'discord.js';
 import config from '../config.json';
 import { handleCommand } from './commands';
 
-const client = new Client({
+export const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
@@ -16,10 +16,6 @@ client.once(Events.ClientReady, () => {
 });
 
 client.on(Events.MessageCreate, async message => {
-	if (message.author.id === client.application!.id) {
-		return;
-	}
-
 	if (!message.content.startsWith('>>')) {
 		return;
 	}

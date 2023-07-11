@@ -8,9 +8,8 @@ function runMoveSubcommand(subcommand: string, battle: Battle) {
 	const match = subcommand.match(/^move (\d+)(?: (up|down|left|right|back(?:wards?)?|forwards?))?$/);
 
 	if (!match) {
-		return send(
-			battle.channel,
-			'To use the "Move" command, follow this format:\n' +
+		throw new Error(
+			'To use the "move" command, follow this format:\n' +
 			'```\n' +
 			'>> move [distance] [direction]\n' +
 			'```\n' +
@@ -28,9 +27,8 @@ function runAttackSubcommand(subcommand: string, battle: Battle, damageByTarget:
 	const match = subcommand.match(/^attack (\d+)(?: ([a-z]))?$/);
 
 	if (!match) {
-		return send(
-			battle.channel,
-			'To use the "Attack" command, follow this format:\n' +
+		throw new Error(
+			'To use the "attack" command, follow this format:\n' +
 			'```\n' +
 			'>> attack [count] [target]\n' +
 			'```\n' +
@@ -48,7 +46,7 @@ function runAttackSubcommand(subcommand: string, battle: Battle, damageByTarget:
 export default async function moveOrAttack(message: Message) {
 	const battle = Battle.getBattleInChannel(message.channel);
 
-	await battle.doTurn(async () => {
+	await battle.doTurn(message.author, async () => {
 		const subcommands = message.content.replace(/^>>/, '').toLowerCase().split(',');
 
 		const damageByTarget: DamageByTarget = new Map();

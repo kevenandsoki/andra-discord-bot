@@ -4,11 +4,10 @@ import Team from '../Team';
 import send from '../send';
 
 export default async function startBattle(message: Message) {
-	const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);
+	const match = message.content.match(/^>> ?start battle(?: (\d+)x(\d+))? *((?:\n\*?[a-z], (?:N\/A|CPU|<@&\d+>), \d+, \d+, \d+, \d+ *)+)\nvs\. *((?:\n\*?[a-z], (?:N\/A|CPU|<@&\d+>), \d+, \d+, \d+, \d+ *)+)$/i);
 
 	if (!match) {
-		return send(
-			message.channel,
+		throw new Error(
 			'To start a battle, follow this format:\n' +
 			'```\n' +
 			'>> start battle [W]x[H]\n' +

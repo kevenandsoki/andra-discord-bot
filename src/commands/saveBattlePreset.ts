@@ -15,8 +15,7 @@ export default async function saveBattlePreset(message: Message) {
 	const match = message.content.match(/^>> ?save battle preset "([\w-]+)"$/i);
 
 	if (!match) {
-		return send(
-			message.channel,
+		throw new Error(
 			'To save the current battle as a preset, follow this format:\n' +
 			'```\n' +
 			'>> save battle preset "name_here"\n' +

@@ -1,18 +1,20 @@
-import { TextBasedChannel } from 'discord.js';
+import { TextBasedChannel, User } from 'discord.js';
 import Team from './Team';
 import send from './send';
 import { restoreProperties, saveProperties } from './rollbacks';
+import Character from './Character';
+import { client } from '.';
 
 export const battles: Battle[] = [];
 
 export type BattleJSON = ReturnType<Battle['toJSON']>;
 
 export default class Battle {
-	static MAX_CHARACTER_COUNT = 50;
+	static readonly MAX_CHARACTER_COUNT = 50;
 
 	loading?: Promise<void>;
 	teams: Team[] = [];
-	turnIndex = 0;
+	#turnCharacter: Character | undefined;
 
 	channel: TextBasedChannel;
 	width: number;
@@ -54,11 +56,12 @@ export default class Battle {
 			battleJSON.height,
 			battleJSON.commandText,
 		);
-		battle.turnIndex = battleJSON.turnIndex;
 
 		for (const teamJSON of battleJSON.teams) {
 			Team.fromJSON(battle, teamJSON);
 		}
+
+		battle.turnCharacter = battle.characters[battleJSON.turnIndex];
 
 		return battle;
 	}
@@ -67,18 +70,26 @@ export default class Battle {
 		return {
 			width: this.width,
 			height: this.height,
-			turnIndex: this.turnIndex,
+			turnIndex: this.characters.indexOf(this.turnCharacter),
 			commandText: this.commandText,
 			teams: this.teams.map(team => team.toJSON()),
 		};
 	}
 
-	get characters() {
-		return this.teams.flatMap(team => team.characters);
+	get turnCharacter() {
+		if (this.#turnCharacter === undefined) {
+			throw new TypeError('You cannot access a battle\'s `turnCharacter` property before any characters have been created.');
+		}
+
+		return this.#turnCharacter;
 	}
 
-	get turnCharacter() {
-		return this.characters[this.turnIndex];
+	set turnCharacter(value) {
+		this.#turnCharacter = value;
+	}
+
+	get characters() {
+		return this.teams.flatMap(team => team.characters);
 	}
 
 	getCharactersByPos({ x, y }: { x: number, y: number }) {
@@ -132,9 +143,16 @@ export default class Battle {
 			return;
 		}
 
-		this.turnIndex = (this.turnIndex + 1) % this.characters.length;
+		let turnIndex = this.characters.indexOf(this.turnCharacter);
+		turnIndex = (turnIndex + 1) % this.characters.length;
+		this.turnCharacter = this.characters[turnIndex];
 
 		await this.announceTurn();
+
+		if (this.turnCharacter.isCPU) {
+			// Don't await this because it isn't part of this turn.
+			this.turnCharacter.sendCPUCommand();
+		}
 	}
 
 	async announceStart() {
@@ -143,18 +161,38 @@ export default class Battle {
 	}
 
 	async announceTurn() {
-		const roleText = this.turnCharacter.role ? `${this.turnCharacter.role} ` : '';
-		await this.channel.send(roleText + `${this.turnCharacter}'s turn!`);
+		let roleText = '';
+
+		if (this.turnCharacter.isCPU) {
+			roleText = 'CPU ';
+		} else if (this.turnCharacter.role) {
+			roleText = `${this.turnCharacter.role} `;
+		}
+
+		roleText += `${this.turnCharacter}'s turn!`;
+
+		if (this.turnCharacter.isCPU) {
+			roleText += ' _(Processing...)_';
+		}
+
+		await this.channel.send(roleText);
 	}
 
 	/** Runs the callback atomically and updates the turn if there were no errors. */
-	async doTurn(callback: () => void | Promise<void>) {
+	async doTurn(
+		user: User,
+		callback: () => void | Promise<void>,
+	) {
 		while (this.loading) {
 			await this.loading;
 		}
 
 		if (!battles.includes(this)) {
 			throw new Error('The battle has already concluded.');
+		}
+
+		if (this.turnCharacter.isCPU && user.id !== client.user!.id) {
+			throw new Error('Please wait your turn.');
 		}
 
 		this.loading = new Promise(async (resolve, reject) => {
@@ -176,7 +214,7 @@ export default class Battle {
 			resolve();
 		});
 
-		return this.loading;
+		await this.loading;
 	}
 
 	remove() {
