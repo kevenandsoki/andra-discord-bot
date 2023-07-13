@@ -4,23 +4,26 @@
 		"lib": [
 			"esnext"
 		],
+		"module": "CommonJS",
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
-		"noEmit": true,
 		"incremental": true,
 		"esModuleInterop": true,
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"downlevelIteration": true
+		"downlevelIteration": true,
+		"outDir": "dist",
+		"sourceMap": true
 	},
 	"include": [
 		"**/*.js",
 		"**/*.ts"
 	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"dist"
 	]
 }
